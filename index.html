@@ -4040,7 +4040,7 @@ function bigTitle(s,y,size=88){ctx.save();ctx.font='bold '+size+'px '+SERIF;ctx.
 function card(title,lines,pr,y0=230){shade(.55,.35);ink(120,70,W-240,H-140,.92);bigTitle(title,160,52);ctx.fillStyle='#efe2c4';lines.forEach((s,i)=>tx(s,W/2,y0+i*40,'23px '+SANS,'#efe2c4','center'));if(pr)prompt(pr,H-96);}
 function drawUI(){ctx=MC;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);ctx.clearRect(0,0,W,H);ctx.globalAlpha=1;
  if(mode=='title'){shade(.6,.05);bigTitle('同难客栈',120);tx('有 难 同 当 · 有 饭 同 吃',W/2,176,'24px '+SERIF,'#e2c88e','center');
-  ['葫芦镇上一家小店，一群凑不齐一身武艺的人。','五回小故事：上菜、抓贼、招亲、采药、守店'].forEach((s,i)=>tx(s,W/2,222+i*32,'21px '+SANS,'#efe2c4','center'));
+  ['葫芦镇上一家小店，一群凑不齐一身武艺的人。','两篇十回：李大嘴篇 · 乔不留·盗圣传'].forEach((s,i)=>tx(s,W/2,222+i*32,'21px '+SANS,'#efe2c4','center'));
   tx(KT('WASD 移动 · J 大勺 · L 扔辣椒 · K 闪身 · E 交谈 · Q 吃包子','摇杆 移动 · 勺 挥大勺 · 椒 扔辣椒 · 闪 闪身 · 谈 交谈 · 包 吃包子'),W/2,H-28,'18px '+SANS,'#cdbb94','center');
   prompt(hasSave()?KT('回车/点屏幕 新游戏 · C 继续存档','点屏幕 新游戏 · 下方按钮 继续存档'):KT('按 回车 / 点屏幕 开始','点屏幕 开始'),H-78);return;}
  if(mode=='cast'){shade(.55,.1);bigTitle('同难客栈 · 人物',78,40);['ma','qiao','liu','wen','ya','zhou'].forEach(id=>{const C=CAST[id],f=LINE['f_'+id],[x,y]=proj(f.position.x,0,f.position.z);ctx.font='15px '+SANS;
@@ -4467,4 +4467,437 @@ function loop(){let ran=false;if(!paused){if(HS>0){HS--;}else{update();ran=true;
 
 window.__game={get mode(){return mode},set mode(v){mode=v},get ph(){return ph},set ph(v){ph=v},get EP(){return EP},get area(){return area},get ents(){return ents},get items(){return items},get dlg(){return dlg},set dlg(v){dlg=v},get carry(){return carry},get order(){return order},get served(){return served},P,TB,startEP,enter,onEnter,talk,get paused(){return paused},get GL(){return GL}};
 loop();
+</script><script>
+"use strict";
+// ================= 乔不留 · 盗圣传（第六至十回）=================
+let CH='ma',LV=0,DSEL=0,CSEL=1,TAPQ=null,QF=null,DS={},DET=0,ST=100,HIDE=false,LOOT=[],PJ=[],CUT=null,REASON='',QUIP='';
+const DSAVE='tongnan_dao_v1';
+function dUnl(){try{return Math.min(4,+(localStorage.getItem(DSAVE)||0))}catch(e){return 0}}
+function dSetUnl(n){try{if(n>dUnl())localStorage.setItem(DSAVE,String(Math.min(4,n)))}catch(e){}}
+const DAREA=['wangfu','palace','roofs','arena','qianfu'];
+const DLV=[
+ {t:'第六回 · 夜盗玉麒麟',s:'潜入王府',d:'躲开灯笼，偷走镇宅之宝',gag:'王爷：“字条上写的啥？” 侍卫：“乔不留。” 王爷：“他留下啥了？” 侍卫：“啥也没留。”',moral:'偷东西要轻，做人要稳——乔不留那时只学会了前一半。'},
+ {t:'第七回 · 御膳房打包',s:'潜入皇宫',d:'从太监眼皮底下偷三道御膳',gag:'御膳太监：“启禀皇上，今晚的菜被人打包了……还留了张字条：‘咸了’。”',moral:'天下美食，偷来的最香；可一个人吃，嘴里总空落落的。'},
+ {t:'第八回 · 屋脊争锋',s:'轻功大会',d:'屋顶赛跑，躲乌鸦、躲刺猬',gag:'草上飞：“他踩我脸借力！” 乔不留：“那叫借力打力，江湖规矩。”',moral:'名号是别人给的，脚下的瓦是自己一片片踩的。'},
+ {t:'第九回 · 鸡王争霸',s:'举办斗鸡大赛',d:'维持秩序，看准时机给鸡加油',gag:'乔不留：“盗圣也得有个正经营生——比如斗鸡。……这算正经吗？”',moral:'场子乱不乱，不看鸡，看人。'},
+ {t:'第十回 · 救柳二丫',s:'夜闯钱府',d:'钱夫人绑了二丫，打进去救人',gag:'二丫：“谁说要你救了！……下回早点来。”',moral:'偷遍天下的一双手，最后只想牵住一个人。'}];
+
+// ---------- 地图 ----------
+const ARC=[];for(let i=0;i<15;i++){const a=-Math.PI+i/14*Math.PI;ARC.push([15+Math.cos(a)*4.7,9+Math.sin(a)*4.1,a]);}
+mk('wangfu','王府 · 夜','.',m=>{rect(m,10,1,19,2,'H');rect(m,1,1,6,4,'H');rect(m,23,1,28,4,'H');rect(m,14,4,15,4,'X');
+ rect(m,1,10,12,10,'#');rect(m,17,10,28,10,'#');rect(m,4,10,5,10,'L');[[8,6],[21,6],[3,14],[26,13]].forEach(([x,y])=>m[y][x]='T');rect(m,9,15,10,15,'X');rect(m,19,16,20,16,'X');rect(m,15,14,17,14,'L');},{});
+mk('palace','紫禁城 · 御膳房','.',m=>{rect(m,2,1,11,3,'H');rect(m,18,1,27,3,'H');rect(m,4,6,5,6,'X');rect(m,14,11,15,11,'X');rect(m,23,6,24,6,'X');
+ rect(m,1,8,9,8,'L');rect(m,20,8,28,8,'L');[[8,13],[21,13],[8,16],[21,16]].forEach(([x,y])=>m[y][x]='#');m[5][12]='X';m[5][17]='X';},{});
+const RRECT=[[1,13,6,18],[9,13,13,18],[16,13,20,18],[23,2,28,18],[16,2,20,7],[9,2,13,7],[1,2,6,7]],RCHIM=[[12,17],[17,14],[27,10],[26,13],[17,5],[12,2]];
+mk('roofs','京城 · 屋脊','g',m=>{RRECT.forEach(([a,b,c,d])=>rect(m,a,b,c,d,'R'));RCHIM.forEach(([x,y])=>m[y][x]='X');},{});
+mk('arena','葫芦镇 · 鸡王擂台','.',m=>{rect(m,1,1,8,2,'H');rect(m,21,1,28,2,'H');rect(m,3,17,8,17,'X');rect(m,21,17,26,17,'X');ARC.forEach(([x,y])=>m[Math.floor(y)][Math.floor(x)]='K');},{});
+mk('qianfu','钱府 · 夜','.',m=>{rect(m,10,1,19,3,'H');rect(m,24,1,28,4,'H');rect(m,1,1,6,5,'H');rect(m,1,9,9,9,'#');rect(m,20,9,28,9,'#');rect(m,3,9,4,9,'L');[[8,13],[22,14],[13,16],[25,17]].forEach(([x,y])=>m[y][x]='T');rect(m,16,14,17,14,'X');},{});
+DAREA.forEach(a=>NPCS[a]=[]);
+
+// ---------- 造型 ----------
+const _lan=(u,arm)=>{const g=new THREE.Group();g.position.set(0,-.66,.06);u.arms[arm].add(g);lantern(g,0,-.2,.1,.55);};
+const _helm=(u,c,tip)=>{hcap(u.H,.142,M(c,{metalness:.55,roughness:.4,flatShading:false}),0,.03,0,0);cone(u.H,.028,.12,M(tip),0,.19,0,5,0);};
+const _spear=u=>{cyl(u.arms[1],.014,.014,1.7,M('#4a3220'),0,-.5,.1,5);cone(u.arms[1],.03,.13,M('#b8b8c0',{metalness:.7,roughness:.3}),0,.42,.1,5,0);};
+Object.assign(LOOK,{
+ guard:{robe:'#5a2e26',inner:'#a89a80',trim:'#2a1814',sash:'#1a1410',pants:'#1c1816',hs:'short',len:'short',wide:1.1,x(u){_helm(u,'#3a3a3e','#b03020');_lan(u,0);_spear(u);}},
+ pguard:{robe:'#7e261c',inner:'#d8c8a0',trim:'#c8a040',sash:'#c8a040',pants:'#1c1816',hs:'short',len:'short',wide:1.1,x(u){_helm(u,'#b8923a','#c02818');_lan(u,0);_spear(u);}},
+ eunuch:{robe:'#34415e',inner:'#d8d0c0',trim:'#c8a040',sash:'#8a6a2a',hs:'short',flare:1.18,x(u){const k=M('#141414');cyl(u.H,.135,.145,.1,k,0,.12,-.01,10);bx(u.H,.4,.025,.05,k,0,.13,-.12,0);_lan(u,0);
+  cyl(u.arms[1],.012,.012,.36,M('#6a4a2a'),0,-.62,.12,4);const w=cone(u.arms[1],.05,.3,M('#f0ece0'),0,-.9,.12,6,0);w.rotation.x=Math.PI;}},
+ hench:{robe:'#36322e',inner:'#8a8070',trim:'#1e1c1a',sash:'#8a2318',hs:'short',len:'short',wide:1.18,x(u){torus(u.H,.124,.024,M('#8a2318'),0,.05,0).rotation.x=Math.PI/2;_lan(u,0);const c=cyl(u.arms[1],.03,.045,.7,M('#3a2a1a'),0,-.75,.2,6);c.rotation.x=1.1;}},
+ steward:{robe:'#6a4a2a',inner:'#d8ccb0',trim:'#3a2814',sash:'#c8a040',hs:'short',wide:1.15,x(u){hcap(u.H,.135,M('#141414'),0,.04,0,0);torus(u.b,.05,.012,M('#e0b840',{metalness:.7,roughness:.3}),.22,.98,.12);_lan(u,0);}},
+ rt0:{robe:'#26262c',inner:'#4a4a52',trim:'#141418',sash:'#8a2318',pants:'#141418',hs:'topknot',len:'short',x(u){bx(u.H,.25,.06,.06,M('#101012'),0,.0,.1,0);}},
+ rt1:{robe:'#3d5236',inner:'#a8b090',trim:'#22301e',sash:'#c8a040',hs:'short',len:'short',x(u){torus(u.H,.123,.022,M('#c8a040'),0,.05,0).rotation.x=Math.PI/2;}},
+ rt2:{robe:'#e2ded4',inner:'#c8c4ba',trim:'#7a7468',sash:'#5a6a8a',hs:'long',flare:1.1},
+ elder:{robe:'#7a7468',inner:'#e8e2d2',trim:'#4a463e',sash:'#3a362e',hair:'#d8d4cc',hs:'long',x(u){const b=cone(u.H,.07,.26,M('#e8e4dc'),0,-.2,.1,6);b.rotation.x=Math.PI;}},
+ gamb:{robe:'#6a5432',inner:'#c8b890',trim:'#3e3020',sash:'#2a2218',hs:'short',len:'short',x(u){torus(u.H,.123,.022,M('#3a5a3a'),0,.05,0).rotation.x=Math.PI/2;}},
+ qian:{robe:'#5e1519',inner:'#efe2c8',skirt:'#3e0e12',trim:'#d6b04a',sash:'#d6b04a',female:1,hs:'updo',flare:1.38,wide:1.12,hair:'#0e0a08',x(u){const gd=M('#d6b04a',{metalness:.75,roughness:.28,flatShading:false}),pe=M('#f4f0e6',{flatShading:false,roughness:.3}),rd=M('#b0201a',{roughness:.4});
+  for(let i=-2;i<=2;i++){const c=cone(u.H,.022,.12,gd,i*.05,.33-Math.abs(i)*.03,-.06,5,0);c.rotation.z=-i*.25;}
+  for(const s of[-1,1]){const p=cyl(u.H,.008,.008,.3,gd,s*.1,.24,-.05,4,0);p.rotation.z=s*1.1;sph(u.H,.026,rd,s*.22,.3,-.05,6,5,0);sph(u.H,.02,gd,s*.125,-.04,.0,6,4,0);}
+  sph(u.H,.04,rd,0,.27,.05,6,5,0);for(let i=0;i<11;i++){const a=i/10*Math.PI;sph(u.b,.018,pe,Math.cos(a)*.13,1.5-Math.sin(a)*.08,.1+Math.sin(a)*.04,5,4,0);}
+  for(const s of[-1,1])bx(u.b,.16,.05,.3,gd,s*.2,1.47,0,0);bx(u.b,.44,.06,.32,gd,0,1.03,0,0);
+  const F=new THREE.Group();F.position.set(0,-.7,.12);u.arms[1].add(F);const fm=new THREE.Mesh(geo('fan',()=>new THREE.CircleGeometry(.24,12,0,Math.PI)),M('#8a1a14',{side:2}));fm.rotation.y=Math.PI/2;sh(fm,0);F.add(fm);const fr=new THREE.Mesh(geo('fanr',()=>new THREE.RingGeometry(.2,.24,12,1,0,Math.PI)),M('#d6b04a',{side:2,metalness:.6}));fr.rotation.y=Math.PI/2;F.add(fr);}}});
+const MKF={};
+function crow(){const root=new THREE.Group(),b=new THREE.Group();root.add(b);const m=M('#1c1c22');const bo=sph(b,.15,m,0,0,0,8,6);bo.scale.set(.8,.7,1.4);sph(b,.1,m,0,.07,.22,8,6);
+ const bk=cone(b,.03,.12,M('#3a3530'),0,.05,.36,5,0);bk.rotation.x=Math.PI/2;for(const s of[-1,1])sph(b,.018,M('#e04a2a',{emissive:'#ff3010',emissiveIntensity:.9}),s*.06,.1,.28,5,4,0);
+ const tl=bx(b,.16,.03,.22,m,0,.02,-.28);tl.rotation.x=-.2;const W=[];for(const s of[-1,1]){const w=new THREE.Group();w.position.set(s*.1,.05,0);b.add(w);bx(w,.5,.03,.26,m,s*.25,0,0);W.push([w,s]);}
+ root.userData={b,H:b,arms:[],legs:[],ph:0,lx:null,lz:null,yaw:0,dog:1,post:()=>{const t=tick*.7;for(const [w,s] of W)w.rotation.z=s*Math.sin(t)*.8;}};return root;}
+function hog(){const root=new THREE.Group(),b=new THREE.Group();root.add(b);const m=M('#7a5a3a'),k=M('#3a2a1a');const bo=sph(b,.26,m,0,.24,0,10,7);bo.scale.set(1,.8,1.15);
+ for(let i=0;i<30;i++){const a=i*2.4,y=.2+(i%5)*.05,r=.26;const c=cone(b,.035,.2,k,Math.cos(a)*r*.8,y+.12,Math.sin(a)*r*.8-.04,4,0);c.lookAt(Math.cos(a)*3,y+2.2,Math.sin(a)*3-.3);c.rotateX(Math.PI/2);}
+ sph(b,.09,M('#c8a888'),0,.2,.27,7,5);sph(b,.03,M('#141414'),0,.22,.36,5,4,0);const legs=[];for(const [x,z] of[[-.12,.12],[.12,.12],[-.12,-.12],[.12,-.12]]){const L=new THREE.Group();L.position.set(x,.1,z);b.add(L);bx(L,.06,.1,.06,k,0,-.05,0,0);legs.push(L);}
+ root.userData={b,H:b,arms:[],legs,ph:0,lx:null,lz:null,yaw:0,dog:1};return root;}
+function rooster(body,tail,comb='#c0281c'){const root=new THREE.Group(),b=new THREE.Group();root.add(b);const bm=M(body),tm=M(tail),cm=M(comb),lm=M('#d8a83a');
+ const bo=sph(b,.2,bm,0,.42,0,10,7);bo.scale.set(.85,.9,1.25);const nk=cyl(b,.07,.11,.22,bm,0,.58,.14,7);nk.rotation.x=.5;
+ const H=new THREE.Group();H.position.set(0,.7,.2);b.add(H);sph(H,.09,bm,0,0,0,8,6);for(let i=0;i<3;i++)bx(H,.022,.08-.02*Math.abs(i-1),.045,cm,0,.1,-.04+i*.04,0);const bk=cone(H,.03,.09,lm,0,-.01,.12,5,0);bk.rotation.x=Math.PI/2;sph(H,.032,cm,0,-.08,.07,6,4,0);
+ for(let i=0;i<5;i++){const t=cone(b,.06,.46,tm,(i-2)*.05,.66,-.3,5);t.rotation.x=-.5-i*.16;t.rotation.z=(i-2)*.12;}
+ for(const s of[-1,1]){const w=bx(b,.04,.2,.32,bm,s*.17,.44,0);w.rotation.x=-.15;}
+ const legs=[];for(const s of[-1,1]){const L=new THREE.Group();L.position.set(s*.07,.26,0);b.add(L);cyl(L,.016,.016,.26,lm,0,-.13,0,4);bx(L,.08,.016,.12,lm,0,-.26,.03,0);legs.push(L);}
+ root.userData={b,H,arms:[],legs,ph:0,lx:null,lz:null,yaw:0,dog:1};return root;}
+MKF.crow=crow;MKF.hog=hog;MKF.roo_w=()=>rooster('#f2eee4','#2a3a2a');MKF.roo_b=()=>rooster('#8a6a4a','#1e1a16');MKF.roo0=()=>rooster('#b8482a','#3a1a10');MKF.roo1=()=>rooster('#2a2624','#141414','#8a1a14');MKF.roo2=()=>rooster('#c8a040','#7a5a1a');
+{const _ef=enemyFig;enemyFig=function(e){if(MKF[e.t])return figFor(e,()=>{const f=MKF[e.t]();inkify(f,.018);return f;});return _ef(e);};}
+{const _af=animFig;animFig=function(f,x,z,fx,fz,dt){_af(f,x,z,fx,fz,dt);const u=f.userData;if(u.face!=null){const ty=Math.atan2(Math.cos(u.face),Math.sin(u.face));let d=ty-u.yaw;d=Math.atan2(Math.sin(d),Math.cos(d));u.yaw+=d*Math.min(1,dt*10);f.rotation.y=u.yaw;}if(u.post)u.post(f);};}
+const PFM={'钱夫人':'qian','王府侍卫':'guard','禁军':'pguard','小太监':'eunuch','太监总管':'eunuch','草上飞':'rt0','一阵风':'rt1','踏雪无痕':'rt2','盗门长老':'elder','赌徒':'gamb','钱府打手':'hench','钱府管家':'steward'};
+{const _pf=pfig;pfig=function(name){const id=PFM[name];if(id){if(!PFIG[id]){const f=fig(id);f.rotation.y=-.35;PFIG[id]=f;pScene.add(f);}return PFIG[id];}return _pf(name);};}
+
+// ---------- 场景 ----------
+function dFloor(g,tex,col,rep,y=0){const t=tex.clone();t.needsUpdate=true;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1]);const fl=new THREE.Mesh(new THREE.PlaneGeometry(44,30),new THREE.MeshStandardMaterial({map:t,color:col,roughness:.95}));fl.rotation.x=-Math.PI/2;fl.position.set(15,y,10);fl.receiveShadow=true;g.add(fl);}
+function dWalls(g,A,o){const wm=new THREE.MeshStandardMaterial({map:TEX.plaster,color:o.col,roughness:.95}),cm=M(o.cap),lm=new THREE.MeshStandardMaterial({map:TEX.plaster,color:o.low||o.col,roughness:.95});
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){const c=A[y][x];
+  if(c=='#'){const bd=x==0||y==0||x==COLS-1||y==ROWS-1;const h=bd?(y==ROWS-1?.45:o.h):o.ih;
+   if(!bd&&A[y][x-1]!='#'&&A[y][x+1]!='#'&&A[y-1][x]!='#'&&A[y+1][x]!='#'){cyl(g,.22,.24,2.6,M(o.pil||'#7a2318'),x+.5,1.3,y+.5,10);cyl(g,.32,.32,.16,M('#4a4846'),x+.5,.08,y+.5,10);continue;}
+   bx(g,1.02,h,1.02,wm,x+.5,h/2,y+.5);bx(g,1.14,.12,1.14,cm,x+.5,h+.06,y+.5);}
+  else if(c=='L'){bx(g,1,.6,.8,lm,x+.5,.3,y+.5);bx(g,1.06,.08,.9,cm,x+.5,.64,y+.5);}
+  else if(c=='T'&&o.tree)o.tree(x,y);}}
+function hall(g,x0,x1,z0,z1,h,txt,o={}){const w=x1-x0,d=z1-z0,cx=(x0+x1)/2,cz=(z0+z1)/2,fz=z1;const pl=new THREE.MeshStandardMaterial({map:TEX.plaster,color:o.wall||'#d8ccb4',roughness:.95}),pr=M(o.pil||'#7a2318');
+ bx(g,w-.1,h,d-.1,pl,cx,h/2,cz);bx(g,w+.2,.3,d+.2,M('#5a5650'),cx,.15,cz);const n=Math.max(2,Math.round(w/2.2));for(let i=0;i<=n;i++)cyl(g,.12,.13,h,pr,x0+.15+i*(w-.3)/n,h/2,fz+.05,8);
+ bx(g,w,.18,.16,pr,cx,h-.1,fz+.05,0);const dw=Math.min(1.6,w*.25);bx(g,dw,1.9,.06,M(o.door||'#4a1a12'),cx,.95,fz+.02,0);for(const s of[-1,1])sph(g,.04,M('#c8a040',{metalness:.6,roughness:.35}),cx+s*.12,1,fz+.07,6,4,0);
+ if(w>4)for(const s of[-1,1])lattice(g,cx+s*w*.3,1.55,fz+.03,Math.min(1.6,w*.22),.8);
+ const k=g.children.length;roof(g,x0,x1,z0,z1,h,o.a||.52);if(o.rc)for(let i=k;i<g.children.length;i++){const m=g.children[i];if(m.material&&m.material.map===TEX.roof){m.material=m.material.clone();m.material.color.set(o.rc);}}
+ if(txt)board(g,Math.min(2.6,w*.42),.62,plaque(txt,512,128,o.pb||'#1c1410',o.pf||'#d8b060',0,76),cx,h-.45,fz+.14);
+ if(o.lan!==0)for(const s of[-1,1])lantern(g,cx+s*(dw/2+.55),h-.8,fz+.38,1);}
+function rock(g,x,z,s,c='#6e6a66'){const o=new THREE.Mesh(geo('dod',()=>new THREE.DodecahedronGeometry(.5,0)),M(c));o.position.set(x,s*.35,z);o.scale.set(s*1.2,s*.9,s);o.rotation.set(.3,x,.2);sh(o);g.add(o);return o;}
+function lpost(g,x,z){cyl(g,.05,.06,2.1,M('#2a1a10'),x,1.05,z,6);bx(g,.5,.05,.05,M('#2a1a10'),x+.22,2.05,z,0);lantern(g,x+.42,1.7,z,.8);}
+const NIGHTT=(g,r)=>(x,y)=>blobTree(g,x+.5,y+.5,.85,['#3e5a44','#4d6b4f','#55704a'],r);
+function bWang(){const g=new THREE.Group(),r=rng(11),A=AREAS.wangfu.map;dFloor(g,TEX.stone,'#a6a6b0',[22,15]);
+ dWalls(g,A,{col:'#9a4a3a',cap:'#2e2e32',h:2.4,ih:1.7,tree:NIGHTT(g,r)});
+ hall(g,10,20,1,3,2.9,'银安殿',{rc:'#9a9890'});hall(g,1,7,1,5,2.4,'西厢',{lan:0});hall(g,23,29,1,5,2.4,'东厢',{lan:0});
+ bx(g,2,.72,1,M('#6a6a70'),15,.36,4.5);bx(g,2.2,.12,1.2,M('#4a4a50'),15,.78,4.5);for(const s of[-1,1]){bx(g,.5,.9,.5,M('#8a8a90'),15+s*3.2,.45,4.6);sph(g,.28,M('#8a8a90'),15+s*3.2,1.15,4.6,8,6);}
+ [[9,15],[10,15],[19,16],[20,16]].forEach(([x,y],i)=>{rock(g,x+.5,y+.5,1.1);rock(g,x+.3,y+.3,.6,'#5a5652');});
+ [[12.5,11],[17.5,11],[2,9],[27.5,9],[8,18],[23,18]].forEach(([x,z])=>lpost(g,x,z));inkify(g);return g;}
+function bPalace(){const g=new THREE.Group(),r=rng(13),A=AREAS.palace.map;dFloor(g,TEX.flag,'#c8bca8',[18,12]);
+ dWalls(g,A,{col:'#8a2c22',cap:'#c8a040',h:2.6,ih:1.6,low:'#9a3a2a',pil:'#8a2018'});
+ hall(g,2,12,1,4,2.7,'御膳房',{rc:'#e0b040',wall:'#c8b890'});hall(g,18,28,1,4,2.7,'寿膳堂',{rc:'#e0b040',wall:'#c8b890'});
+ const tp=M('#5e3e24',{roughness:.6}),lg=M('#33200f');[[4,6],[14,11],[23,6]].forEach(([x,y])=>{bx(g,2,.1,.9,tp,x+1,.8,y+.5);bx(g,2.1,.04,1,M('#c8a040'),x+1,.86,y+.5,0);for(const dx of[-.85,.85])for(const dz of[-.35,.35])bx(g,.08,.76,.08,lg,x+1+dx,.38,y+.5+dz,0);});
+ jar(g,12.5,5.5);jar(g,17.5,5.5);for(const x of[3,6,9])bx(g,1.1,.7,.6,M('#6a5a4a'),x+.5,.35,4.4);
+ [[10.5,7.6],[19.5,7.6],[13,18.2],[17,18.2],[3,12],[27,12]].forEach(([x,z])=>lpost(g,x,z));inkify(g);return g;}
+function bRoofs(){const g=new THREE.Group(),r=rng(17);dFloor(g,TEX.stone,'#7a7068',[22,15],-4.2);
+ RRECT.forEach(([a,b,c,d],i)=>{const w=c-a+1,dd=d-b+1,cx=a+w/2,cz=b+dd/2;const rt=TEX.roof.clone();rt.needsUpdate=true;rt.wrapS=rt.wrapT=THREE.RepeatWrapping;rt.repeat.set(w/2.5,dd/2.5);
+  const top=new THREE.MeshStandardMaterial({map:rt,roughness:.8}),wl=new THREE.MeshStandardMaterial({map:TEX.plaster,color:'#cbbca2',roughness:.95});const o=bx(g,w,4.2,dd,wl,cx,-2.1,cz);o.material=[wl,wl,top,wl,wl,wl];
+  const dk=M('#2c2b2a');bx(g,w+.24,.12,.2,dk,cx,.0,b-.02);bx(g,w+.24,.12,.2,dk,cx,.0,d+1.02);bx(g,.2,.12,dd+.2,dk,a-.02,0,cz);bx(g,.2,.12,dd+.2,dk,c+1.02,0,cz);
+  for(const s of[-1,1]){const e=bx(g,.14,.42,.14,dk,s<0?a+.05:c+.95,.2,s<0?b+.05:d+.95);e.rotation.z=s*.4;}
+  for(let k=0;k<3;k++)lattice(g,cx+(k-1)*w*.28,-1.6,d+1.03,Math.min(1.2,w*.2),.7);});
+ RCHIM.forEach(([x,y])=>{bx(g,.62,.95,.62,M('#7a5e4a'),x+.5,.47,y+.5);bx(g,.74,.1,.74,M('#3a3230'),x+.5,.98,y+.5);});
+ [[8,15.5],[15,15.5],[22,15.5],[22,4.5],[15,4.5],[8,4.5],[25.5,8.2]].forEach(([x,z],i)=>{const k=i%2;lantern(g,x,-.9,z,.7);const s=bx(g,i<6?2.2:.04,.015,i<6?.015:2.2,M('#2a1a10'),x,-.42,z,0);});
+ for(let i=0;i<5;i++)bird(g,r()*30,6+r()*3,r()*20);inkify(g);return g;}
+function bArena(){const g=new THREE.Group(),r=rng(19);dFloor(g,TEX.dirt,'#d8ccb0',[16,10]);
+ house(g,1,9,-.5,3,2.6,1,0);house(g,21,29,-.5,3,2.6,1,1);
+ const sd=new THREE.Mesh(new THREE.CircleGeometry(3.25,28),new THREE.MeshStandardMaterial({color:'#c8b088',roughness:1}));sd.rotation.x=-Math.PI/2;sd.position.set(15,.02,9);sd.receiveShadow=true;g.add(sd);
+ const pm=M('#5a3a22');for(let i=0;i<24;i++){const a=i/24*Math.PI*2,x=15+Math.cos(a)*3.3,z=9+Math.sin(a)*3.3;cyl(g,.06,.07,.62,pm,x,.31,z,6);const a2=a+Math.PI/24,b=bx(g,.06,.06,.88,pm,15+Math.cos(a2)*3.3,.5,9+Math.sin(a2)*3.3);b.rotation.y=-a2;}
+ for(const x of[11.4,18.6]){cyl(g,.08,.09,3.2,M('#3a2414'),x,1.6,4.3,6);lantern(g,x,2.2,4.55,.8);}board(g,5.6,.9,plaque('鸡 王 争 霸',768,128,'#7a1a14','#f0d080',0,84),15,2.9,4.3);
+ const cols=['#5a6a7a','#7a5a4a','#6a7a5a','#8a7a5a','#5a4a6a','#7a6a5a','#4a5a5a'];ARC.forEach(([x,z,a],i)=>folk(g,Math.floor(x)+.5,Math.floor(z)+.5,cols[i%7],Math.atan2(15-x,9-z)));
+ const bn=M('#6a4a2a');for(const x0 of[3,21])bx(g,6,.45,.7,bn,x0+3,.23,17.5);for(const [x,z] of[[2,8],[28,8],[2,14],[28,14]])blobTree(g,x,z,1,['#6c8a56','#7d9460'],r);
+ for(let i=0;i<8;i++){const f=bx(g,.5,.7,.02,M(['#b0372c','#d6a640','#3a6ea8'][i%3]),5+i*2.9,3.1,3.35,0);f.rotation.z=.08;}inkify(g);return g;}
+function bQian(){const g=new THREE.Group(),r=rng(23),A=AREAS.qianfu.map;dFloor(g,TEX.flag,'#a8a0a0',[18,12]);
+ dWalls(g,A,{col:'#7a4a38',cap:'#2e2e32',h:2.5,ih:1.7,tree:NIGHTT(g,r)});
+ hall(g,10,20,1,4,3,'钱府',{pb:'#7a1a14',pf:'#f0d080',rc:'#8a8680'});hall(g,24,29,1,5,2.2,'柴房',{lan:0,wall:'#a89a80',door:'#3a2a1a'});hall(g,1,7,1,6,2.4,'账房',{lan:0});
+ blobTree(g,17,15,1,['#c8a040','#d8b050','#b89030'],r,'#6a4a2a');for(let i=0;i<10;i++){const c=cyl(g,.12,.12,.03,M('#e0b840',{metalness:.7,roughness:.3}),16.2+r()*1.6,1.6+r()*1.2,14.6+r()*.8,8,0);c.rotation.x=Math.PI/2;}
+ [[9.5,10.4],[20.5,10.4],[2,12],[27.5,12],[13,18],[19,18]].forEach(([x,z])=>lpost(g,x,z));jar(g,23,6);jar(g,22.4,6.6);inkify(g);return g;}
+Object.assign(ENV,{wangfu:{bg:'#121726',fog:['#121726',22,48],hs:'#9aaad4',hg:'#2a2430',hi:.85,si:1.6,sc:'#b4c4ec',L:[]},palace:{bg:'#161424',fog:['#161424',22,48],hs:'#a8a8d4',hg:'#2e2428',hi:.85,si:1.6,sc:'#bcc4ec',L:[]},
+ roofs:{bg:'#d9b48e',fog:['#d9b48e',20,52],hs:'#ffd8b0',hg:'#3a2a2a',hi:.95,si:2.4,sc:'#ffb070',L:[]},arena:{bg:'#ddd3bd',fog:['#ddd3bd',22,52],hs:'#ffe8c8',hg:'#4a3a2a',hi:1,si:2.6,sc:'#ffd2a0',L:[[15,2.4,5,6]]},
+ qianfu:{bg:'#1a1220',fog:['#1a1220',22,48],hs:'#a89ac8',hg:'#2e2026',hi:.85,si:1.5,sc:'#c4b4e0',L:[]}});
+let DG=null;
+if(GL){AG.wangfu=bWang();AG.palace=bPalace();AG.roofs=bRoofs();AG.arena=bArena();AG.qianfu=bQian();for(const a of DAREA){AG[a].visible=false;scene.add(AG[a]);}DG=new THREE.Group();scene.add(DG);}
+
+// ---------- 通用逻辑 ----------
+const dSolidP=(x,y)=>{const c=tileAt(x,y);return '#THKX'.includes(c)||(c=='L'&&P.jz<.35);};
+const eSolid=(x,y)=>'#THKXLg'.includes(tileAt(x,y));
+function dMove(o,dx,dy,r,sf){const ok=(x,y)=>!sf(x-r,y-r)&&!sf(x+r,y-r)&&!sf(x-r,y+r)&&!sf(x+r,y+r);if(ok(o.x+dx,o.y))o.x+=dx;if(ok(o.x,o.y+dy))o.y+=dy;}
+const GT={guard:{range:150,half:.55,sp:.95,nm:'王府侍卫'},pguard:{range:160,half:.5,sp:.9,nm:'禁军'},eunuch:{range:120,half:.65,sp:1.05,nm:'小太监'},hench:{range:145,half:.55,sp:1,nm:'钱府打手'},steward:{range:120,half:.6,sp:.8,nm:'钱府管家'}};
+function G(t,path,o={}){const p=path.map(([x,y])=>[x*T+16,y*T+16]);const e=Object.assign({t,x:p[0][0],y:p[0][1],r:11,hp:1,max:1,area,path:p,wi:p.length>1?1:0,ang:o.base!=null?o.base:Math.PI/2,base:Math.PI/2,wait:0,stun:0,see:0,g:1,hurt:0},GT[t],o);ents.push(e);return e;}
+function facing(e){const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy);let da=Math.atan2(dy,dx)-e.ang;da=Math.atan2(Math.sin(da),Math.cos(da));return d<e.range&&Math.abs(da)<e.half+.2;}
+function canSee(e){if(e.stun>0||e.ko||e.chase)return false;const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy);if(d>e.range)return false;let da=Math.atan2(dy,dx)-e.ang;da=Math.atan2(Math.sin(da),Math.cos(da));
+ if(Math.abs(da)>e.half&&d>24)return false;if(HIDE&&d>e.range*.62)return false;const n=Math.ceil(d/9);for(let i=1;i<n;i++){const c=tileAt(e.x+dx*i/n,e.y+dy*i/n);if(c=='#'||c=='H')return false;if(HIDE&&'LXTK'.includes(c))return false;}return true;}
+function turn(e,a,k){let d=a-e.ang;d=Math.atan2(Math.sin(d),Math.cos(d));e.ang+=d*k;}
+function guardsUpd(){let any=0;for(const e of ents){if(!e.g||e.area!=area||e.ko)continue;if(e.stun>0){e.stun--;e.see=0;if(e.stun==0)floats.push({x:e.x,y:e.y,s:'……嗯？',l:50});continue;}
+  if(e.chase){const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;turn(e,Math.atan2(dy,dx),.2);if(e.hurt>0)e.hurt--;else dMove(e,dx/d*1.9,dy/d*1.9,e.r,eSolid);if(d<e.r+12)hurtP(1,dx/d,dy/d);continue;}
+  const s=canSee(e);e.see=s?Math.min(1,e.see+.06):Math.max(0,e.see-.02);
+  if(s){any=1;const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;turn(e,Math.atan2(dy,dx),.12);DET+=(HIDE?.8:2.2)*(1.35-d/e.range)*(DS.alert||1);if(d>44)dMove(e,dx/d*.45,dy/d*.45,e.r,eSolid);continue;}
+  if(e.see>.25){e.ang+=Math.sin(tick/9)*.03;continue;}
+  if(e.path.length==1){const [px,py]=e.path[0],dx=px-e.x,dy=py-e.y,d=Math.hypot(dx,dy);if(d>3){dMove(e,dx/d*e.sp,dy/d*e.sp,e.r,eSolid);turn(e,Math.atan2(dy,dx),.15);}else turn(e,e.base+Math.sin(tick/75+e.x)*1.05,.05);continue;}
+  const [tx,ty]=e.path[e.wi],dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);
+  if(d<3){if(e.wait<=0)e.wait=70;e.wait--;e.ang+=Math.sin(tick/22)*.035;if(e.wait<=1){e.wait=0;e.wi=(e.wi+1)%e.path.length;}}
+  else{turn(e,Math.atan2(dy,dx),.1);dMove(e,dx/d*e.sp,dy/d*e.sp,e.r,eSolid);}}
+ if(!any)DET=Math.max(0,DET-.45);DET=Math.min(100,DET);}
+function dian(){for(const e of ents){if(e.hp<=0||e.area!=area||e.ko||e.noHit)continue;const vx=e.x-P.x,vy=e.y-P.y,d=Math.hypot(vx,vy);if(d>46+e.r)continue;const dot=(vx*P.dir.x+vy*P.dir.y)/(d||1);if(dot<.15&&d>e.r+8)continue;const nx=vx/(d||1),ny=vy/(d||1);
+  const L=LS[LV];if(L.onHit&&L.onHit(e,nx,ny))continue;
+  if(e.g&&!e.chase){const front=facing(e);if(DS.permKO)e.ko=1;else e.stun=420;e.see=0;HS=3;TRA=Math.min(1,TRA+.2);fxQ.push({x:e.x,y:e.y,l:10,s:1});sfx('hit');floats.push({x:e.x,y:e.y,s:'点！',l:40});
+   if(front){DET+=38;note('正面点穴，动静太大了！');}if(e.onKO)e.onKO(e);continue;}
+  hitE(e,nx,ny);if(e.hp<=0){if(e.g){e.hp=1;e.ko=1;e.chase=0;if(e.onKO)e.onKO(e);}if(e.onDie)e.onDie(e);}}}
+function dLose(r,q){if(mode=='over')return;REASON=r;QUIP=q||'';mode='over';dlg=null;CUT=null;sfx('bad');FL=.4;FLC='#c02818';TRA=.6;}
+function dWin(){dSetUnl(LV+1);mode='drecap';sfx('stage');}
+const QN='乔不留';
+function dStart(n){CH='dao';LV=n;mode='play';dlg=null;ents=[];items=[];shots=[];parts=[];floats=[];carry=0;P.max=10;P.hp=10;P.inv=0;P.dash=0;P.dcd=0;P.jt=0;P.jz=0;P.fall=0;P.stun=0;P.swing=0;P.cd=0;P.kx=P.ky=0;
+ DET=0;ST=100;HIDE=false;PJ=[];LOOT=[];CUT=null;REASON='';DS={};toastT=0;area=DAREA[n];NPCS[area]=[];P.dir={x:0,y:-1};if(DG){DG.clear();}
+ for(const k of FIGS.keys())if(typeof k=='object'){scene.remove(FIGS.get(k));FIGS.delete(k);}LS[n].init();note(DLV[n].t);sfx('stage');}
+function dUpdate(){tick++;if(toastT>0)toastT--;for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.l--;}parts=parts.filter(p=>p.l>0);for(const f of floats){f.y-=.6;f.l--;}floats=floats.filter(f=>f.l>0);
+ if(DS.cere&&tick%3==0)for(let i=0;i<3;i++)parts.push({x:P.x+(Math.random()-.5)*160,y:P.y+(Math.random()-.5)*90,vx:(Math.random()-.5)*.6,vy:-Math.random()*.4,l:20,c:['#ffd24a','#e04a2a','#fff8e0','#7ac0ff'][i%4]});
+ if(mode=='over'){if(hit('Enter')||hit('Space')||hit('KeyR')||hit('KeyE'))dStart(LV);return;}
+ if(mode=='drecap'){if(hit('Enter')||hit('Space')||hit('KeyE')){if(LV<4)dStart(LV+1);else{mode='dend';sfx('stage');}}return;}
+ if(mode=='dend'){if(hit('Enter')||hit('Space')||hit('KeyE')){mode='dsel';DSEL=4;}return;}
+ if(dlg){if(hit('KeyE')||hit('Space')||hit('Enter')||hit('KeyJ')){if(!(dlg.choices&&dlg.i==dlg.lines.length-1)){dlg.i++;sfx('talk');if(dlg.i>=dlg.lines.length){const a=dlg.after;dlg=null;a&&a();}}}
+  if(dlg&&dlg.choices&&dlg.i==dlg.lines.length-1){for(let c=0;c<dlg.choices.length;c++)if(hit('Digit'+(c+1))){const f=dlg.choices[c][1],a=dlg.after;dlg=null;f();a&&a();break;}}return;}
+ if(CUT){CUT.t++;CUT.f(CUT.t);return;}
+ const L=LS[LV];
+ if(!(L.ctl&&L.ctl())){
+  if(P.fall){P.fall++;P.jz=-P.fall*P.fall*.004;if(P.fall>34){P.fall=0;P.jz=0;P.x=DS.last[0];P.y=DS.last[1];P.hp-=1;P.inv=60;P.jt=0;note('掉下屋檐，摔了个屁墩儿！');sfx('hurt');TRA=.5;if(P.hp<=0)dLose('摔得爬不起来了','长老：“轻功第一课：别往下看。”');}return;}
+  let dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
+  if(dx||dy){const l=Math.hypot(dx,dy);dx/=l;dy/=l;P.dir={x:dx,y:dy};}
+  if(P.dcd>0)P.dcd--;if((hit('KeyK')||hit('ShiftLeft'))&&P.dcd<=0){P.dash=9;P.dcd=36;sfx('dash');}
+  if(hit('KeyL')&&P.jt<=0){P.jt=34;sfx('dash');for(let i=0;i<5;i++)parts.push({x:P.x,y:P.y+8,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*2,l:12,c:'#cde'});}
+  if(hit('KeyQ')){if(DS.stealth){HIDE=!HIDE&&ST>10;note(HIDE?'屏息凝神，贴着阴影走……':'松了口气');}else note('这儿用不着屏息');}
+  if(HIDE){ST-=.22;if(ST<=0){ST=0;HIDE=false;note('憋不住了！');}}else ST=Math.min(100,ST+.18);
+  let sp=2.6;if(HIDE)sp=1.35;if(P.jt>0){P.jt--;P.jz=Math.sin((1-P.jt/34)*Math.PI)*1.1;sp=3.9;}else P.jz=0;
+  if(P.dash>0){P.dash--;sp=7.2;dx=P.dir.x;dy=P.dir.y;parts.push({x:P.x,y:P.y+8,vx:0,vy:0,l:12,c:'#cde'});}
+  if(DS.carry)sp*=.9;if(P.stun>0){P.stun--;sp=0;}
+  dMove(P,dx*sp+P.kx,dy*sp+P.ky,10,dSolidP);P.kx*=.8;P.ky*=.8;
+  if(P.cd>0)P.cd--;if(P.inv>0)P.inv--;if(P.swing>0)P.swing--;
+  if((hit('KeyJ')||hit('Space'))&&P.cd<=0&&P.stun<=0){P.cd=20;P.swing=12;sfx('slash');dian();}
+  if(DS.roof&&!P.fall&&P.jt<=0&&tileAt(P.x,P.y)=='g'){P.fall=1;sfx('bad');}}
+ if(mode=='play')L.upd();
+ if(P.hp<=0&&mode!='over')dLose('气血耗尽','乔不留：“我……我只是腿软，不是认输。”');}
+
+// ---------- 五回 ----------
+const LS=[];
+const KH=(d,t)=>KT(d,t);
+// 第六回 王府
+LS[0]={init(){P.x=2.5*T;P.y=17.5*T;DS.stealth=1;
+  G('guard',[[14.5,11.6]],{base:Math.PI/2});G('guard',[[10,13],[22,13],[22,17],[10,17]]);G('guard',[[2,7],[12,7]]);G('guard',[[17,7],[27,7]]);G('guard',[[9,5.6],[20,5.6]]);
+  LOOT=[{k:'qilin',x:15*T,y:4.5*T,n:'玉麒麟'},{k:'exit',x:27.5*T,y:17.5*T,n:'翻墙处',off:1}];
+  say(QN,['（蹲在王府墙头）在下乔不留，江湖人称……暂时还没人称。','今晚，我要偷走王府的镇宅之宝——玉麒麟。','偷到了，江湖就得给我起个外号；偷不到，王爷就得给我起个牢号。'],()=>say(QN,[KH('摇杆/WASD 走 · Q 屏息潜行 · J 背后点穴 · L 轻功跃过矮墙 · K 闪身 · E 拿东西','摇杆 走 ·「隐」屏息潜行 ·「点」背后点穴 ·「跃」轻功跳矮墙 ·「闪」闪身 ·「谈」拿东西'),'别在灯笼光里站太久——警觉满了，就得吃牢饭。']));},
+ obj(){return DS.got?'带着玉麒麟，从东南角翻墙出去':'潜入银安殿前，偷走玉麒麟';},
+ upd(){guardsUpd();const q=LOOT[0],ex=LOOT[1];
+  if(!DS.got&&hit('KeyE')&&Math.hypot(q.x-P.x,q.y-P.y)<62){DS.got=1;DS.carry=1;q.carried=1;ex.off=0;sfx('dish');say(QN,['（双手捧起）好沉……这成色，够我吃三辈子包子。','（殿里传来王爷的梦话）“谁……谁动我麒麟……”','……王爷，您接着睡。'],()=>{DS.alert=1.3;ents.forEach(e=>{if(e.g)e.range*=1.12;});G('guard',[[24,15],[24,11.8]]);G('guard',[[4,15],[12,15]]);note('侍卫换岗，加派了人手！');});}
+  if(DS.got&&!DS.done&&Math.hypot(ex.x-P.x,ex.y-P.y)<44){DS.done=1;say(QN,['（翻上墙头）王府，后会无期！','第二天，满城贴出告示：“玉麒麟失窃，贼人只留下一张字条——”','“乔不留到此一游。”……偷完，不留。我这名字，就是这么响起来的。'],dWin);}
+  if(DET>=100)dLose('被王府侍卫发现了！','侍卫：“抓到个蹲墙角的！” 乔不留：“我在……练蹲马步。”');}};
+// 第七回 皇宫
+LS[1]={init(){P.x=15*T;P.y=18*T;DS.stealth=1;DS.n=0;
+  G('eunuch',[[3,10],[12,10]]);G('eunuch',[[18,10],[27,10]]);G('eunuch',[[10,13.5],[19,13.5],[19,15.5],[10,15.5]]);
+  G('pguard',[[2,5],[11,5]]);G('pguard',[[18,5],[27,5]]);G('pguard',[[14.5,8.4]],{base:Math.PI/2});
+  LOOT=[{k:'dish',n:'佛跳墙',x:5*T,y:6.5*T,c:'#a8642a'},{k:'dish',n:'烤全鸭',x:15*T,y:11.5*T,c:'#b8582a'},{k:'dish',n:'桂花糕',x:24*T,y:6.5*T,c:'#e8d080'},{k:'exit',x:15*T,y:18.3*T,n:'御花园狗洞',off:1}];
+  say(QN,['玉麒麟一出手，江湖人却说：“偷王府算什么？有本事偷皇上的晚饭！”','听说御膳房今晚做“佛跳墙”——佛都跳墙了，我乔不留跳个宫墙怎么了？','三道菜：佛跳墙、烤全鸭、桂花糕。偷完从狗洞溜回去。'],()=>say(QN,[KH('桌子、水缸后面屏息（Q），太监就看不见你。','躲在桌子、水缸后面按「隐」，太监就看不见你。')]));},
+ obj(){return DS.n<3?'偷御膳 '+DS.n+'/3（佛跳墙 · 烤全鸭 · 桂花糕）':'抱着御膳，从南边狗洞溜走';},
+ upd(){guardsUpd();
+  if(hit('KeyE'))for(const it of LOOT){if(it.k!='dish'||it.got)continue;if(Math.hypot(it.x-P.x,it.y-P.y)<64){it.got=1;DS.n++;sfx('dish');floats.push({x:P.x,y:P.y,s:'+'+it.n,l:60});
+    const ln={'佛跳墙':['（闻一口）佛跳墙……难怪佛要跳，我也想跳进锅里。'],'烤全鸭':['烤鸭……以后要是有个黑鸭帮，知道我偷了它们亲戚，非打上门来不可。'],'桂花糕':['御制桂花糕！先揣着……给以后认识的姑娘留一块。']}[it.n];
+    say(QN,ln,()=>{if(DS.n==2){G('eunuch',[[12,12],[17,12]],{nm:'太监总管',range:175,half:.6});say('太监总管',['（尖声）谁在御膳房吧唧嘴？！都给咱家精神点！'],()=>note('太监总管来巡夜了'));}if(DS.n==3){LOOT[3].off=0;DS.carry=1;note('三道菜到手，原路溜！');}});break;}}
+  const ex=LOOT[3];if(DS.n>=3&&!DS.done&&Math.hypot(ex.x-P.x,ex.y-P.y)<46){DS.done=1;say(QN,['（钻出狗洞）佛跳墙我跳墙，烤鸭我打包。','第二天皇上上朝：“朕的晚膳呢？”','太监：“回皇上……被一个叫乔不留的，打包了。还留了张字条：‘咸了’。”'],dWin);}
+  if(DET>=100)dLose('被太监发现了！','太监：“抓刺客——不对，抓吃客！”');}};
+// 第八回 轻功大会
+const RCP=[[3.5,15.5],[11,15.5],[18,15.5],[25.5,15.5],[25.5,5],[18,4.5],[11,4.5],[3.5,4.5]];
+const rprog=(cp,x,y)=>cp>=RCP.length?1e6:cp*10000-Math.hypot(RCP[cp][0]*T-x,RCP[cp][1]*T-y);
+LS[2]={init(){P.x=3*T;P.y=16.7*T;DS.roof=1;DS.cp=1;DS.go=0;DS.last=[3*T,16.7*T];DS.crow=150;NPCS.roofs=[{id:'elder',x:3,y:2.2,name:'盗门长老'}];
+  ['草上飞','一阵风','踏雪无痕'].forEach((nm,i)=>ents.push({t:'rt'+i,nm,x:(2.2+i*1.1)*T,y:14.3*T,r:11,hp:1,max:1,area,cp:1,sp:[2.0,2.13,2.26][i],jz:0,stun:0,rival:1,noHit:1,ang:0}));
+  [[10.5,13.6,10.5,17.6],[23.6,9.5,27.6,9.5],[10.5,2.6,10.5,6.6]].forEach(([a,b,c,d],i)=>ents.push({t:'hog',nm:'刺猬',x:a*T,y:b*T,ax:a*T,ay:b*T,bx:c*T,by:d*T,u:i*.3,dir:1,r:13,hp:1,max:1,area,tm:i*50,stun:0,ang:0}));
+  say('盗门长老',['十年一度，盗门轻功大会！谁先从这片屋脊跑一圈、踩到老夫脚下，谁就是——','盗圣！'],()=>say('草上飞',['乔不留？偷了个玉麒麟就来凑热闹？屋顶可不是王府的墙头。'],()=>say(QN,['（压压帽子）我不跟你比嘴，比腿。',KH('L 轻功跃过屋缝，K 闪身躲开，J 点穴能让刺猬缩成球。乌鸦俯冲前地上有黑影——快躲！','「跃」跨过屋缝，「闪」躲攻击，「点」让刺猬缩成球。地上出现黑影，就是乌鸦要扑下来了！')],()=>{CUT={t:0,f:t=>{if(t>=180){CUT=null;DS.go=1;sfx('stage');note('跑！');}}};})));},
+ obj(){if(DS.won)return '盗圣加冕！';if(!DS.go)return '准备起跑';const me=rprog(DS.cp,P.x,P.y);const rk=1+ents.filter(e=>e.rival&&rprog(e.cp,e.x,e.y)>me).length;DS.rank=rk;return '沿着旗子跑一圈 '+Math.min(DS.cp-1,7)+'/7 · 第'+'一二三四'[rk-1]+'名';},
+ onHit(e,nx,ny){if(e.t=='hog'){if(e.stun<=0){e.stun=180;floats.push({x:e.x,y:e.y,s:'缩成球了',l:50});sfx('hit');HS=3;fxQ.push({x:e.x,y:e.y,l:10,s:1});}return true;}
+  if(e.t=='crow'){if(e.h<1.6){e.hp=0;floats.push({x:e.x,y:e.y,s:'啪！',l:40});sfx('hit');HS=3;fxQ.push({x:e.x,y:e.y,l:10,s:1});}return true;}return false;},
+ upd(){if(!DS.go||DS.won)return;
+  const c=RCP[DS.cp];if(c&&Math.hypot(c[0]*T-P.x,c[1]*T-P.y)<48&&P.jz>=0){DS.last=[c[0]*T,c[1]*T];DS.cp++;sfx('coin');if(DS.cp>=RCP.length){this.finish();return;}}
+  for(const e of ents){if(e.hp<=0)continue;
+   if(e.rival){if(e.done)continue;if(e.stun>0){e.stun--;e.jz*=.8;continue;}const c=RCP[e.cp],dx=c[0]*T-e.x,dy=c[1]*T-e.y,d=Math.hypot(dx,dy);e.ang=Math.atan2(dy,dx);const s=e.sp*(1+.07*Math.sin(tick/37+e.sp*9));
+    if(d<s+2){e.cp++;if(e.cp>=RCP.length){e.done=1;dLose(e.nm+'先踩到了长老脚下！','长老：“轻功不行，先回去当个跑堂练练腿吧。”');return;}}else{e.x+=dx/d*s;e.y+=dy/d*s;}const gp=tileAt(e.x,e.y)=='g';e.jz+=((gp?1.1:0)-e.jz)*.22;continue;}
+   if(e.t=='hog'){if(e.stun>0){e.stun--;continue;}e.tm++;const ph=e.tm%170;const tel=ph>125&&ph<165;e.tel=tel;
+    if(!tel){e.u+=e.dir*.011;if(e.u>1||e.u<0){e.dir*=-1;e.u=Math.max(0,Math.min(1,e.u));}const nx=e.ax+(e.bx-e.ax)*e.u,ny=e.ay+(e.by-e.ay)*e.u;e.ang=Math.atan2(ny-e.y,nx-e.x);e.x=nx;e.y=ny;}
+    const d=Math.hypot(P.x-e.x,P.y-e.y);if(ph==164){e.burst=10;sfx('hit');if(d<60&&P.jz<.5){hurtP(1,(P.x-e.x)/(d||1),(P.y-e.y)/(d||1));P.stun=18;note('被刺猬扎了一身！');}for(const r of ents)if(r.rival&&Math.hypot(r.x-e.x,r.y-e.y)<60){r.stun=45;floats.push({x:r.x,y:r.y,s:'哎哟！',l:40});}}
+    if(e.burst>0)e.burst--;if(!tel&&d<e.r+10&&P.jz<.45){hurtP(1,(P.x-e.x)/(d||1),(P.y-e.y)/(d||1));}continue;}
+   if(e.t=='crow'){e.tm++;if(e.st=='tel'){if(e.tm<22&&e.vic){e.tx+=(e.vic.x-e.tx)*.15;e.ty+=(e.vic.y-e.ty)*.15;}e.x=e.tx+Math.cos(e.tm/6)*50;e.y=e.ty+Math.sin(e.tm/6)*26;e.h=4.6;e.ang=e.tm/6+Math.PI/2;if(e.tm>=48){e.st='dive';e.tm=0;e.sx=e.x;e.sy=e.y;sfx('dash');}}
+    else if(e.st=='dive'){const k=e.tm/14;e.x=e.sx+(e.tx-e.sx)*k;e.y=e.sy+(e.ty-e.sy)*k;e.h=4.6-3.8*k;e.ang=Math.atan2(e.ty-e.sy,e.tx-e.sx);if(e.tm>=14){e.st='away';e.tm=0;
+      const d=Math.hypot(P.x-e.tx,P.y-e.ty);if(d<32&&P.jz<.45&&P.dash<=0&&P.inv<=0){hurtP(1,(P.x-e.tx)/(d||1),(P.y-e.ty)/(d||1));P.stun=30;note('被乌鸦啄了脑门！');}
+      for(const r of ents)if(r.rival&&Math.hypot(r.x-e.tx,r.y-e.ty)<34){r.stun=55;floats.push({x:r.x,y:r.y,s:'被啄！',l:45});}}}
+    else{e.x+=Math.cos(e.ang)*5;e.y+=Math.sin(e.ang)*5;e.h+=.12;if(e.tm>40)e.hp=0;}}}
+  ents=ents.filter(e=>e.hp>0);
+  if(--DS.crow<=0){DS.crow=100+Math.random()*60;const rv=ents.filter(e=>e.rival&&!e.done);const vic=Math.random()<.68||!rv.length?P:rv[(Math.random()*rv.length)|0];ents.push({t:'crow',x:vic.x,y:vic.y,tx:vic.x+(vic===P?P.dir.x*30:0),ty:vic.y+(vic===P?P.dir.y*30:0),vic,r:10,hp:1,max:1,area,st:'tel',tm:0,h:4.6,ang:0});}},
+ finish(){DS.won=1;DS.go=0;sfx('stage');ents=ents.filter(e=>e.rival);ents.forEach((e,i)=>{e.x=(1.8+i*1.4)*T;e.y=6.4*T;e.ang=-Math.PI/2;e.jz=0;});P.x=3.5*T;P.y=4.6*T;P.dir={x:0,y:1};DS.cere=1;FL=.5;FLC='#fff0c0';TRA=.4;
+  CUT={t:0,f:t=>{if(t==70){CUT=null;say('盗门长老',['本届盗门轻功大会魁首——乔不留！','自今日起，江湖尊你一声：盗！圣！'],()=>say('草上飞',['他刚才踩我脸借力！'],()=>say(QN,['那叫借力打力，江湖规矩。','（抱拳）各位承让。以后谁家丢了东西，先别怀疑我——我是圣人。'],dWin)));}}};}};
+// 第九回 鸡王争霸
+const RR=[{nm:'铁冠大将军',t:'roo0',oh:3,v:.016,w:.25,who:'赌徒',ln:['我这铁冠大将军，一顿吃三斤米！','乔不留：“我这只一顿吃三斤……你那只。”']},
+ {nm:'黑旋风',t:'roo1',oh:4,v:.021,w:.2,who:'赌徒',ln:['我家黑旋风练过轻功，能飞上房！','乔不留：“巧了，主持人我也练过。”']},
+ {nm:'金距鸡王',t:'roo2',oh:5,v:.027,w:.15,who:'钱夫人',ln:['（摇着金扇）金距鸡王，西域进贡，爪子上镶的是真金。','它要是输了，我包下整个葫芦镇的米；它要是赢了——它不会输。']}];
+LS[3]={init(){P.x=15*T;P.y=14.5*T;DS.r=0;DS.ph='intro';DS.chaos=0;NPCS.arena=[{id:'ya',x:9,y:14.4},{id:'elder',x:21,y:14.4,name:'盗门长老'}];
+  say(QN,['成了盗圣，长老说：“盗圣要服众，得替江湖办件正经事。”','于是我在葫芦镇办了第一届——鸡王争霸赛！门票三文，瓜子另算。'],()=>say('柳二丫',['（挤在人群里）喂！主持的！你要是敢让场子乱了，我替你维持秩序——用剑。'],()=>say(QN,['（擦汗）姑娘别急……我自己来。',KH('赌急了的人会往场子里冲，J 点穴让他们消停。斗鸡时看准光标落进金框按 J 喝彩！','赌急了的人会往场子里冲，用「点」让他们消停。斗鸡时光标落进金框，按「点」喝彩！')],()=>this.order())));},
+ order(){DS.ph='order';DS.spawn=3+DS.r;DS.st=40;DS.chaos=0;note('第'+'一二三'[DS.r]+'场 · 先维持秩序！');},
+ obj(){const r='第'+'一二三'[Math.min(DS.r,2)]+'/3场 · ';if(DS.ph=='order')return r+'别让赌徒冲进场子 · 乱 '+DS.chaos+'/3';if(DS.ph=='fight')return r+'光标进金框时喝彩！（'+KT('J','点')+'）';return r+'鸡王争霸';},
+ onHit(e){if(e.t=='gamb'&&!e.calm){e.calm=1;e.ct=80;floats.push({x:e.x,y:e.y,s:['消停点！','坐下！','瓜子拿好！'][(Math.random()*3)|0],l:50});sfx('hit');HS=3;fxQ.push({x:e.x,y:e.y,l:10,s:1});return true;}return true;},
+ ctl(){if(DS.ph!='fight')return false;const F=DS.F;
+  if(F.cd>0)F.cd--;else{F.bp+=F.bv;if(F.bp>1||F.bp<0){F.bv*=-1;F.bp=Math.max(0,Math.min(1,F.bp));F.sw++;}}
+  if(F.sw>=5){F.sw=0;this.peck(0);}
+  if((hit('KeyJ')||hit('Space')||hit('KeyE'))&&F.cd<=0){if(Math.abs(F.bp-F.zc)<F.zw/2)this.peck(1);else{floats.push({x:F.me.x,y:F.me.y,s:'喊早了！',l:40});this.peck(0);}}
+  for(const r of [F.me,F.op]){if(r.lg>0)r.lg--;}return true;},
+ peck(win){const F=this.F||DS.F;F.cd=26;F.sw=0;const a=win?F.me:F.op,b=win?F.op:F.me;a.lg=14;HS=4;TRA=Math.min(1,TRA+.25);sfx(win?'hit':'hurt');fxQ.push({x:b.x,y:b.y,l:10,s:.8});for(let i=0;i<8;i++)parts.push({x:b.x,y:b.y,vx:Math.random()*4-2,vy:Math.random()*4-2,l:20,c:i&1?'#fff8e0':'#e8d8c0'});
+  if(win){F.oh--;floats.push({x:b.x,y:b.y,s:'好！',l:40});}else F.mh--;F.zc=.2+Math.random()*.6;
+  if(F.oh<=0){DS.ph='post';ents=ents.filter(e=>!e.roo||e===F.me);sfx('coin');const r=DS.r;DS.r++;
+   if(r<2)say(QN,[['铁冠大将军，掉冠了！第一场——我们赢！','黑旋风……旋风变成了微风！第二场也拿下！'][r]],()=>{ents=[];this.order();});
+   else{NPCS.arena.push({id:'qian',x:19,y:13.4,name:'钱夫人'});say('钱夫人',['（金扇啪地合上）乔不留！你敢让我的鸡王输？','好……我记住你了。还有你身边那个穿红坎肩的丫头！'],()=>say('柳二丫',['看什么看？再看把你的鸡炖了！'],()=>say(QN,['（擦汗）二丫姑娘……求你少说两句。','第一届鸡王争霸，圆满落幕。可我总觉得，钱夫人那一眼——不太对劲。'],dWin)));}}
+  else if(F.mh<=0)dLose('咱的鸡输了！',DS.mine=='w'?'白羽：“咯……”（倒地装死）':'芦花：“咯咯！”（转身就跑）');},
+ fight(){DS.ph='fight';const R=RR[DS.r];ents=ents.filter(e=>e.calm);P.x=15*T;P.y=13.7*T;P.dir={x:0,y:-1};
+  const me={t:DS.mine=='w'?'roo_w':'roo_b',nm:DS.mine=='w'?'白羽':'芦花',x:13.6*T,y:9*T,r:10,hp:1,max:1,area,noHit:1,roo:1,ang:0,lg:0},op={t:R.t,nm:R.nm,x:16.4*T,y:9*T,r:10,hp:1,max:1,area,noHit:1,roo:1,ang:Math.PI,lg:0};ents.push(me,op);
+  DS.F={me,op,mh:DS.mine=='b'?5:4,oh:R.oh,bp:0,bv:R.v,zc:.5,zw:R.w+(DS.mine=='w'?.04:0),cd:40,sw:0};this.F=DS.F;},
+ upd(){if(DS.ph=='order'){if(DS.spawn>0&&--DS.st<=0){DS.spawn--;DS.st=75-DS.r*10;const S=[[1.5,17],[28.5,17],[1.5,12],[28.5,12],[11,18.5],[19,18.5]][(Math.random()*6)|0];ents.push({t:'gamb',nm:'赌徒',x:S[0]*T,y:S[1]*T,r:11,hp:1,max:1,area,sp:1.05+DS.r*.18,ang:0,calm:0});}
+   for(const e of ents){if(e.t!='gamb')continue;if(e.calm){if(--e.ct<=0)e.hp=0;continue;}const dx=15*T-e.x,dy=9*T-e.y,d=Math.hypot(dx,dy);e.ang=Math.atan2(dy,dx);e.x+=dx/d*e.sp;e.y+=dy/d*e.sp;
+    if(d<3.5*T){e.hp=0;DS.chaos++;TRA=.5;sfx('bad');floats.push({x:e.x,y:e.y,s:'冲进场子了！',l:50});if(DS.chaos>=3){dLose('场子被砸了！','乡亲们抢鸡的抢鸡，抢瓜子的抢瓜子……长老连胡子都被拔了两根。');return;}}}
+   ents=ents.filter(e=>e.hp>0);
+   if(DS.spawn<=0&&!ents.some(e=>e.t=='gamb'&&!e.calm)){DS.ph='pick';const R=RR[DS.r];
+    const go=()=>say(R.who,R.ln,()=>{note('开斗！');this.fight();});
+    if(DS.r==0)say(QN,['秩序好了！参赛的鸡……主办方也得出一只，不然没人信这比赛公平。'],null,[['白羽：吃得多，喊一声就上',()=>{DS.mine='w';}],['芦花：脾气大，挨得住啄',()=>{DS.mine='b';}]]),dlg.after=go;
+    else{if(DS.r==2){NPCS.arena.push({id:'qian',x:19,y:13.4,name:'钱夫人'});}go();}}}}};
+// 第十回 救柳二丫
+LS[4]={init(){P.x=2.5*T;P.y=17.5*T;DS.stealth=1;DS.permKO=1;
+  G('hench',[[4,15],[14,15]]);G('hench',[[16,12],[27,12],[27,16],[16,16]]);G('hench',[[11,7],[18,7]]);G('hench',[[21,6.6],[27,6.6]]);G('hench',[[14.5,10.6]],{base:Math.PI/2});
+  G('steward',[[2,7],[8,7]],{onKO:()=>{if(!DS.key){DS.key=1;sfx('coin');note('从管家腰上摸到一把铜钥匙！');}}});
+  LOOT=[{k:'door',x:26.5*T,y:5.6*T,n:'柴房'}];
+  say('同难客栈伙计',['不好了！柳二丫被钱夫人的人绑走了！说是……鸡王的仇！'],()=>say(QN,['（把毛巾往肩上一甩）为了一只鸡，绑一个姑娘？','钱夫人，你惹错人了。我乔不留偷东西从不留痕——这回，我来偷人。',KH('打手被点倒就起不来了。被发现会群起围攻。管家身上有柴房钥匙。','打手被「点」倒就起不来了。被发现会群起围攻。管家身上有柴房钥匙。')]));},
+ obj(){if(DS.boss){const b=DS.boss;return b.ko?'救出柳二丫':'打败钱夫人！（二丫会帮你扔板凳）';}if(DS.alarm)return '被发现了！把围上来的打手都点倒';return DS.key?'用钥匙打开东北角的柴房':'摸到管家（西边）身后，点穴拿钥匙';},
+ upd(){if(!DS.boss)guardsUpd();
+  if(DET>=100&&!DS.alarm){DS.alarm=1;DET=0;sfx('bad');TRA=.5;note('钱府打手：“有刺客！”');for(const e of ents)if(e.g&&!e.ko){e.chase=1;e.hp=2;e.max=2;}}
+  if(DS.alarm&&!ents.some(e=>e.chase&&!e.ko)){DS.alarm=0;note('暂时安全了……');}
+  if(DS.alarm&&!DS.boss)for(const e of ents)if(e.chase&&!e.ko&&e.hp>0){}
+  const dr=LOOT[0];if(!DS.open&&hit('KeyE')&&Math.hypot(dr.x-P.x,dr.y-P.y)<54){if(!DS.key){note('门锁着。钥匙……多半在管家身上。');sfx('bad');}else{DS.open=1;dr.off=1;sfx('dish');NPCS.qianfu=[{id:'ya',x:26,y:6.2}];
+    say('柳二丫',['（被绑在柴堆上）唔唔唔！……呸！你谁啊？','哦，是那个主持斗鸡的。'],()=>say(QN,['救你的人。'],()=>say('柳二丫',['救我？我正准备自己咬断绳子！……这绳子挺硬的，你来吧。'],()=>say('钱夫人',['（金扇一展）好一个盗圣，偷到我钱府来了？','来人！给我把这对狗男女——',],()=>say('柳二丫',['谁跟他是一对！'],()=>{this.boss();})))));}}
+  const b=DS.boss;if(b&&!b.ko){this.bossUpd(b);}
+  for(const p of PJ){p.x+=p.vx;p.y+=p.vy;p.l--;if(eSolid(p.x,p.y)&&tileAt(p.x,p.y)!='L')p.l=0;if(p.l>0&&Math.hypot(p.x-P.x,p.y-P.y)<15&&P.jz<.6){p.l=0;hurtP(1,p.vx/3,p.vy/3);}}PJ=PJ.filter(p=>p.l>0);
+  if(b&&!b.ko&&DS.boss&&DS.ally!=null&&--DS.ally<=0){DS.ally=300;if(b.hp>1){b.hp--;floats.push({x:b.x,y:b.y,s:'二丫：板凳！',l:60});fxQ.push({x:b.x,y:b.y,l:10,s:1.4});sfx('hit');HS=3;TRA=.3;}}},
+ boss(){for(const e of ents)if(e.g){e.ko=1;e.chase=0;}DS.alarm=0;const b={t:'qian',nm:'钱夫人',x:15*T,y:6.2*T,r:15,hp:18,max:18,area,st:0,cd:80,ang:Math.PI/2,isBoss:1,onDie:e=>{e.hp=1;e.ko=1;PJ=[];this.end();}};ents.push(b);DS.boss=b;DS.ally=240;sfx('stage');note('钱夫人亲自动手了！');},
+ bossUpd(b){const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;if(b.hurt>0)b.hurt--;b.cd--;
+  if(b.st==0){b.ang=Math.atan2(dy,dx);if(d>70)dMove(b,dx/d*1,dy/d*1,b.r,eSolid);if(b.cd<=0){if(Math.random()<.5){b.st=1;b.ch=36;b.cdx=dx/d;b.cdy=dy/d;}else{b.st=3;b.ch=24;}}}
+  else if(b.st==1){b.ch--;if(b.ch<=0){b.st=2;b.ch=26;sfx('dash');}}
+  else if(b.st==2){dMove(b,b.cdx*6,b.cdy*6,b.r,eSolid);if(--b.ch<=0){b.st=0;b.cd=b.hp<9?70:100;}}
+  else if(b.st==3){if(--b.ch<=0){const a0=Math.atan2(dy,dx);for(let i=-2;i<=2;i++){const a=a0+i*.26;PJ.push({x:b.x,y:b.y,vx:Math.cos(a)*3.4,vy:Math.sin(a)*3.4,l:110});}sfx('coin');b.st=0;b.cd=b.hp<9?75:105;}}
+  if(d<b.r+12&&!(b.hurt>0))hurtP(b.st==2?2:1,dx/d,dy/d);
+  if(b.hp<=9&&!DS.summon){DS.summon=1;say('钱夫人',['废物！都给我起来！'],()=>{for(const p of[[12,7],[18,7]]){const e=G('hench',[p]);e.chase=1;e.hp=2;e.max=2;}});}},
+ end(){say('钱夫人',['（瘫坐）我的金距鸡王……我的钱府……','乔不留：“鸡输了就输了，下回换只鸡——别换人。”'],()=>{NPCS.qianfu=[{id:'ya',x:15,y:7.2}];say('柳二丫',['（揉着手腕）喂，乔不留。……谢了。','不过你要敢到处说是你救的我，我就说是我救的你！'],()=>say(QN,['（笑）好，是你救的我。','打那以后，我把偷来的东西都还了回去，金盆洗手。','跟着二丫，进了葫芦镇一家叫“同难客栈”的小店，当了个跑堂。','盗圣不偷了——只偷偷，多看她两眼。'],dWin));});}};
+
+// ---------- 3D 附加 ----------
+function own(o,k,mk){if(!o[k]){o[k]=mk();DG.add(o[k]);}const m=o[k];m.userData.u=1;m.visible=true;return m;}
+const ADD=o=>Object.assign(o,{blending:THREE.AdditiveBlending,transparent:true,depthWrite:false});
+function beam(g,c){const bm=new THREE.Mesh(new THREE.CylinderGeometry(.2,.32,2.6,10,1,true),new THREE.MeshBasicMaterial(ADD({color:c,opacity:.16,side:THREE.DoubleSide})));bm.position.y=1.3;g.add(bm);g.userData.bm=bm;return g;}
+function mkQilin(){const g=new THREE.Group(),j=M('#5fae8c',{roughness:.25,metalness:.1,flatShading:true,emissive:'#123826',emissiveIntensity:.6});const b=sph(g,.16,j,0,.22,0,8,6);b.scale.set(1.5,.9,.9);sph(g,.1,j,.2,.36,0,8,6);
+ for(const s of[-1,1]){cone(g,.02,.12,M('#e0c070',{metalness:.6}),.22,.48,s*.04,4,0).rotation.x=s*.3;for(const x of[-.12,.12])cyl(g,.03,.03,.16,j,x,.08,s*.07,5);}const t=cone(g,.04,.2,j,-.24,.3,0,5);t.rotation.z=1.2;
+ bx(g,.42,.06,.26,M('#c8a040',{metalness:.6,roughness:.35}),0,0,0,0);g.scale.setScalar(1.25);return beam(g,'#9affd0');}
+function mkDish(c){const g=new THREE.Group();cyl(g,.24,.17,.05,M('#e8dcc4',{roughness:.3,flatShading:false}),0,.0,0,14,0);torus(g,.235,.012,M('#2a5a9a'),0,.03,0).rotation.x=Math.PI/2;const f=sph(g,.16,M(c,{roughness:.55}),0,.05,0,10,6,0);f.scale.y=.55;
+ for(let i=0;i<3;i++)bx(g,.04,.02,.04,M('#4a7a30'),-.06+i*.06,.14,.02,0);return beam(g,'#ffd27a');}
+function mkRing(c,r=.6){const m=new THREE.Mesh(new THREE.RingGeometry(r*.82,r,28),new THREE.MeshBasicMaterial(ADD({color:c,opacity:.8,side:THREE.DoubleSide})));m.rotation.x=-Math.PI/2;return m;}
+function mkFlag(c){const g=new THREE.Group();cyl(g,.03,.04,2,M('#3a2414'),0,1,0,5);const f=bx(g,.6,.4,.02,M(c),.31,1.75,0,0);g.userData.f=f;return g;}
+function dPre(dw){if(CH=='dao'){if(!QF){QF=figFor('heroQ',()=>fig('qiao'));QF.userData.post=heroPose;}heroF=QF;}else if(QF&&heroF===QF)heroF=FIGS.get('hero')||null;
+ if(!DG)return;DG.visible=dw;if(!dw)return;DG.children.forEach(o=>o.userData.u=0);
+ if(heroF)heroF.position.y=P.jz;
+ // 灯光跟随灯笼
+ if(ENV[area]&&!ENV[area].L.length&&area!='roofs'){const ls=ents.filter(e=>e.g&&!e.ko).sort((a,b)=>Math.hypot(a.x-P.x,a.y-P.y)-Math.hypot(b.x-P.x,b.y-P.y));PL.forEach((l,i)=>{const e=ls[i];if(e){l.position.set(e.x/T+Math.cos(e.ang)*.3,1.2,e.y/T+Math.sin(e.ang)*.3);l.intensity=e.stun>0?2.5:6;l.distance=8;}else{l.intensity=0;}});}
+ for(const e of ents){if(e.hp<=0||e.area!=area)continue;const f=FIGS.get(e);
+  if(f){const u=f.userData;if(e.g||e.rival||e.t=='gamb'||e.roo||e.t=='crow'||e.t=='hog'||e.isBoss)u.face=e.ang;if(!u.post)u.post=ff=>entPose(e,ff);
+   f.position.y=e.t=='crow'?e.h:e.rival?e.jz:e.roo?(e.lg>0?Math.sin(e.lg/14*Math.PI)*.35:Math.abs(Math.sin(tick/9+e.x))*.05):0;
+   if(e.roo){const o=e===DS.F?.me?1:-1;}}
+  if(e.g&&!e.ko&&!e.chase&&e.stun<=0&&DS.stealth&&!DS.boss){const c=own(e,'_cone',()=>{const m=new THREE.Mesh(geo('cone'+e.half,()=>new THREE.CircleGeometry(1,20,-e.half,2*e.half)),new THREE.MeshBasicMaterial(ADD({color:'#ffe2a0',opacity:.2,side:THREE.DoubleSide})));return m;});
+   c.position.set(e.x/T,.05,e.y/T);c.rotation.set(-Math.PI/2,0,-e.ang);c.scale.setScalar(e.range/T*(HIDE?.62:1));c.material.color.set(e.see>.05?'#ff6a3a':'#ffe2a0');c.material.opacity=.16+e.see*.22;}
+  if(e.t=='crow'&&e.st!='away'){const s=own(e,'_sh',()=>{const m=new THREE.Mesh(new THREE.CircleGeometry(.5,18),new THREE.MeshBasicMaterial({color:'#000',transparent:true,opacity:.4,depthWrite:false}));m.rotation.x=-Math.PI/2;return m;});const k=e.st=='tel'?e.tm/48:1;s.position.set(e.tx/T,.03,e.ty/T);s.scale.setScalar(.4+k*.8);s.material.opacity=.2+k*.35;}
+  if(e.t=='hog'&&(e.tel||e.burst>0)){const r=own(e,'_ring',()=>mkRing('#ff5a3a',1));r.position.set(e.x/T,.06,e.y/T);const s=e.burst>0?(1.9-e.burst*.05):1.6+Math.sin(tick/3)*.1;r.scale.setScalar(s);r.material.opacity=e.burst>0?e.burst/10:.5;}
+  if(e.isBoss&&e.st==1){const r=own(e,'_tel',()=>mkRing('#ff3a2a',.8));r.position.set(e.x/T,.06,e.y/T);r.scale.setScalar(1+(36-e.ch)/36);}}
+ for(const it of LOOT){if(it.got||it.off&&it.k!='door')continue;
+  if(it.k=='qilin'){const m=own(it,'_m',mkQilin);if(it.carried){m.position.set(P.x/T,1.95+P.jz+Math.sin(tick/8)*.03,P.y/T);m.userData.bm.visible=false;}else{m.position.set(it.x/T,.86,it.y/T);m.rotation.y=tick/60;m.userData.bm.material.opacity=.1+.08*Math.sin(tick/8);}}
+  if(it.k=='dish'){const m=own(it,'_m',()=>mkDish(it.c));m.position.set(it.x/T,.92,it.y/T);m.userData.bm.material.opacity=.1+.08*Math.sin(tick/8);}
+  if(it.k=='exit'){const m=own(it,'_m',()=>beam(mkRing('#9affd0',.7),'#9affd0'));m.position.set(it.x/T,.06,it.y/T);m.material.opacity=.5+.4*Math.sin(tick/7);}
+  if(it.k=='door'&&!it.off){const m=own(it,'_m',()=>mkRing('#ffd27a',.6));m.position.set(it.x/T,.06,it.y/T);m.material.opacity=.4+.4*Math.sin(tick/7);}}
+ if(DS.carry&&LV==1){for(let i=0;i<3;i++){const m=own(DS,'_d'+i,()=>{const g=mkDish(['#a8642a','#b8582a','#e8d080'][i]);g.userData.bm.visible=false;return g;});m.position.set(P.x/T,1.9+i*.1+P.jz,P.y/T);m.scale.setScalar(.8);}}
+ if(LV==2){RCP.forEach((c,i)=>{if(i==0)return;const f=own(DS,'_f'+i,()=>mkFlag(i==RCP.length-1?'#d6a640':'#b0372c'));f.position.set(c[0],0,c[1]);f.userData.f.rotation.y=Math.sin(tick/10+i)*.3;f.scale.setScalar(i==DS.cp?1.25:.9);});
+  if(!DS.won&&RCP[DS.cp]){const r=own(DS,'_cpr',()=>mkRing('#ffe08a',.8));const c=RCP[DS.cp];r.position.set(c[0],.04,c[1]);r.material.opacity=.5+.4*Math.sin(tick/6);}
+  if(DS.cere){const b=own(DS,'_plq',()=>{const g=new THREE.Group();board(g,2.2,.8,plaque('盗 圣',512,192,'#7a1a14','#f0d080',0,120),0,0,0);return g;});DS.pt=(DS.pt||0)+1;b.position.set(3.5,Math.max(2.5,6-DS.pt*.05),3.0);}}
+ PJ.forEach((p,i)=>{const m=own(DS,'_pj'+i,()=>{const c=cyl(new THREE.Group(),.12,.12,.03,M('#e0b840',{metalness:.75,roughness:.25,emissive:'#5a3a00',emissiveIntensity:.5}),0,0,0,10,0);return c.parent;});m.position.set(p.x/T,.9,p.y/T);m.rotation.set(tick*.3,tick*.2,0);});
+ DG.children.forEach(o=>{if(!o.userData.u)o.visible=false;});}
+function heroPose(f){if(CH!='dao')return;const u=f.userData;if(P.jt>0){const k=Math.sin((1-P.jt/34)*Math.PI);u.legs[0].rotation.x=-1.1*k;u.legs[1].rotation.x=.6*k;u.arms[0].rotation.x=-.4-1.4*k;u.arms[1].rotation.x=.9*k;u.b.rotation.x=.3*k;}
+ if(P.fall){u.arms[0].rotation.x=u.arms[1].rotation.x=-2.8;u.b.rotation.x=-.3;}
+ if(HIDE){u.b.scale.set(1.04,.82,1.04);u.b.rotation.x=.3;u.legs[0].rotation.x=-.5;u.legs[1].rotation.x=.3;}
+ if(P.stun>0){u.H.rotation.z=Math.sin(tick*.5)*.25;}}
+function entPose(e,f){const u=f.userData;f.rotation.x=0;f.rotation.z=0;
+ if(e.ko){f.rotation.x=0;f.rotation.z=1.45;f.position.y=.18;return;}
+ if(u.dog){if(e.t=='hog'){const s=e.stun>0?.85:e.tel?1.18:1;u.b.scale.set(s,s,s);if(e.stun>0)u.b.rotation.x=tick*.0;}if(e.roo&&e.lg>0){u.b.rotation.x=.5*Math.sin(e.lg/14*Math.PI);}return;}
+ if(e.stun>0||e.calm){u.arms[0].rotation.x=u.arms[1].rotation.x=0;u.legs[0].rotation.x=u.legs[1].rotation.x=0;u.H.rotation.x=.35;u.b.rotation.z=Math.sin(tick/12)*.04;if(e.calm){f.position.y=-.15;u.legs[0].rotation.x=u.legs[1].rotation.x=-1.4;}}
+ if(e.rival&&e.jz>.2){u.legs[0].rotation.x=-1;u.legs[1].rotation.x=.6;u.arms[0].rotation.x=u.arms[1].rotation.x=-1;}
+ if(e.rival&&e.stun>0)u.H.rotation.z=Math.sin(tick*.5)*.3;
+ if(e.isBoss&&e.st==1){u.arms[1].rotation.x=-2.6;u.b.rotation.x=-.2;}if(e.isBoss&&e.st==2)u.b.rotation.x=.4;if(e.isBoss&&e.st==3){u.arms[1].rotation.x=-1.6;u.arms[1].rotation.z=-.6;}
+ if(e.see>.25&&e.g){u.H.rotation.y=0;}}
+{const _r=render3D;render3D=function(){if(!GL)return;if(mode=='chap'||mode=='dsel'){selRender();return;}const dw=CH=='dao'&&(mode=='play'||mode=='over');dPre(dw);_r();};}
+function selRender(){townTick();setEnv('inn');FIGS.forEach(f=>f.visible=false);if(DG)DG.visible=false;HL.visible=false;SLASH.userData.m.opacity=0;SPK.forEach(m=>m.visible=false);FXS.forEach(m=>m.visible=false);
+ LINE.visible=true;LINE.children.forEach(f=>f.visible=false);const t=performance.now()/1000;camT.set(15,1.0,10);camP.set(15,1.9,16.2);cam.position.copy(camP);cam.lookAt(camT);cam.updateMatrixWorld();
+ if(mode=='chap'){[['ma',0],['qiao',1]].forEach(([id,i])=>{const f=LINE['f_'+id];f.visible=true;const tx=CARD[i].x+CARD[i].w/2,[sx]=proj(f.position.x,1,10);f.position.x+=(tx-sx)*.004;f.position.z=10;f.position.y=0;
+  const on=CSEL==i;f.rotation.y=on?Math.sin(t*1.2)*.25:(i?-.5:.5);f.userData.b.position.y=on?Math.abs(Math.sin(t*3))*.04:0;f.userData.H.rotation.y=Math.sin(t*.7+i)*.2;const s=on?1.06:.96;f.scale.setScalar(s*(id=='ma'?1:1));});}
+ sun.position.set(camT.x-7,camT.y+15,camT.z+5);sun.target.position.copy(camT);GL.setScissorTest(false);GL.setViewport(0,0,GR.w,GR.h);GL.render(scene,cam);}
+
+// ---------- 界面 ----------
+const CARD=[{x:118,y:96,w:340,h:470},{x:502,y:96,w:340,h:470}];
+const LCARD=i=>({x:34+i*182,y:150,w:166,h:330}),BACK={x:22,y:20,w:118,h:46};
+function splitL(s,w,font){ctx.font=font;const out=[];let line='';for(const ch of s){if(ctx.measureText(line+ch).width>w&&!'，。！？、”）：；…'.includes(ch)){out.push(line);line='';}line+=ch;}if(line)out.push(line);return out;}
+function frame(r,on,fill){ctx.save();ctx.fillStyle=fill;rrect(r.x,r.y,r.w,r.h,6);ctx.fill();ctx.lineWidth=on?3:1.4;ctx.strokeStyle=on?'#f0d080':'rgba(200,168,106,.6)';if(on){ctx.shadowColor='rgba(255,210,120,.8)';ctx.shadowBlur=16;}rrect(r.x,r.y,r.w,r.h,6);ctx.stroke();ctx.restore();
+ ctx.strokeStyle=GOLD;ctx.lineWidth=2;const c=12;[[r.x+4,r.y+4,1,1],[r.x+r.w-4,r.y+4,-1,1],[r.x+4,r.y+r.h-4,1,-1],[r.x+r.w-4,r.y+r.h-4,-1,-1]].forEach(([a,b,sx,sy])=>{ctx.beginPath();ctx.moveTo(a,b+sy*c);ctx.lineTo(a,b);ctx.lineTo(a+sx*c,b);ctx.stroke();});}
+function drawChap(){shade(.5,.12);bigTitle('同难客栈',70,48);tx('选 择 篇 章',W/2,88+24,'20px '+SERIF,'#e2c88e','center');
+ const D=[{nm:'李大嘴篇',sub:'同难客栈 · 第一至五回',d:['大厨李大嘴，挥勺护店','上菜 · 抓贼 · 招亲 · 采药 · 守店']},{nm:'乔不留 · 盗圣传',sub:'第六至十回 · 新篇',d:['神偷乔不留，如何成了盗圣','王府 · 皇宫 · 轻功 · 斗鸡 · 救人']}];
+ CARD.forEach((r,i)=>{const on=CSEL==i;frame(r,on,on?'rgba(40,26,14,.22)':'rgba(10,7,5,.38)');const y0=r.y+r.h-150;ink(r.x+10,y0,r.w-20,140,.94);
+  seal(i?'新':'壹',r.x+20,r.y+16,18);tx(D[i].nm,r.x+r.w/2,y0+40,'bold 28px '+SERIF,on?'#f6e2a8':'#d8c49a','center');tx(D[i].sub,r.x+r.w/2,y0+70,'17px '+SANS,'#cdbb94','center');
+  D[i].d.forEach((s,k)=>tx(s,r.x+r.w/2,y0+98+k*25,'17px '+SANS,'#efe2c4','center'));
+  if(i==1){const u=dUnl()+1;tx('已解锁 '+u+'/5',r.x+r.w-20,r.y+38,'bold 16px '+SANS,'#ead39a','right');}});
+ prompt(KT('← → 选择 · 回车 确认 · Esc 返回','点一张卡片开始'),H-30);}
+function drawDsel(){shade(.7,.45);bigTitle('乔不留 · 盗圣传',96,46);tx('神偷是怎么炼成的',W/2,134,'20px '+SERIF,'#e2c88e','center');const u=dUnl();
+ for(let i=0;i<5;i++){const r=LCARD(i),on=DSEL==i,lk=i>u;frame(r,on,lk?'rgba(10,7,5,.75)':'rgba(30,20,12,.82)');const E=DLV[i];const [a,b]=E.t.split(' · ');
+  seal(a,r.x+r.w/2-30,r.y+16,18);ctx.globalAlpha=lk?.45:1;splitL(b,r.w-24,'bold 22px '+SERIF).forEach((s,k)=>tx(s,r.x+r.w/2,r.y+96+k*30,'bold 22px '+SERIF,on?'#f6e2a8':'#e6cf98','center'));
+  tx(E.s,r.x+r.w/2,r.y+176,'bold 17px '+SANS,'#ead39a','center');splitL(E.d,r.w-26,'16px '+SANS).forEach((s,k)=>tx(s,r.x+r.w/2,r.y+206+k*22,'16px '+SANS,'#efe2c4','center'));ctx.globalAlpha=1;
+  tx(lk?'未解锁':(i<u?'已通关 · 可重玩':'可挑战'),r.x+r.w/2,r.y+r.h-22,'bold 16px '+SANS,lk?'#9a8a70':'#9affd0','center');}
+ frame(BACK,false,'rgba(30,20,12,.85)');tx('‹ 返回',BACK.x+BACK.w/2,BACK.y+31,'bold 20px '+SANS,'#ead39a','center',0);
+ prompt(KT('← → 选择 · 回车 开始 · Esc 返回','点一回开始'),H-60);
+ if(toastT>0){ctx.save();ctx.globalAlpha=Math.min(1,toastT/30);ctx.font='bold 23px '+SANS;const w=ctx.measureText(toast).width+60;ink(W/2-w/2,500,w,48);tx(toast,W/2,532,'bold 23px '+SANS,CREAM,'center');ctx.restore();}}
+function dHUD(){const L=LS[LV],ob='◆ '+(L.obj?L.obj():'');ctx.font='20px '+SANS;const ow=Math.max(470,ctx.measureText(ob).width+40);ink(10,10,ow,78);
+ const sw=seal(QN,22,18,19);const hx=34+sw;tx('气血',hx,40,'17px '+SERIF,GOLD,'left',0);for(let i=0;i<P.max;i++){const on=i<P.hp;ctx.fillStyle=on?(P.hp<=3?'#c0392b':'#a8402e'):'rgba(255,255,255,.08)';ctx.fillRect(hx+40+i*15,28,12,12);}
+ if(DS.stealth){const x=hx+40+P.max*15+16;tx('气息',x,40,'17px '+SERIF,GOLD,'left',0);ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(x+40,29,80,10);ctx.fillStyle=HIDE?'#7ac0ff':'#5a8ab0';ctx.fillRect(x+40,29,80*ST/100,10);}
+ tx(ob,24,76,'20px '+SANS,'#efe0bd');
+ const ttl=DLV[LV].t;ctx.font='bold 22px '+SERIF;const ew=ctx.measureText(ttl).width+36;ink(W-10-ew,10,ew,42);tx(ttl,W-10-ew/2,39,'bold 22px '+SERIF,'#e6cf98','center');
+ if(DS.stealth&&!DS.boss){const x0=W/2-150,y0=98;ink(x0,y0,300,34,.9);tx(DS.alarm?'警报！':'警觉',x0+14,y0+23,'bold 17px '+SERIF,DET>60||DS.alarm?'#ff7a5a':GOLD,'left',0);ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(x0+66,y0+12,218,10);const g=ctx.createLinearGradient(x0+66,0,x0+284,0);g.addColorStop(0,'#d6b04a');g.addColorStop(1,'#d0302a');ctx.fillStyle=g;ctx.fillRect(x0+66,y0+12,218*(DS.alarm?1:DET/100),10);}
+ if(LV==3&&DS.ph=='fight'&&DS.F){const F=DS.F,x0=W/2-250,y0=H-138;ink(x0,y0,500,104,.94);tx(F.me.nm+' '+'♥'.repeat(Math.max(0,F.mh)),x0+20,y0+30,'bold 19px '+SANS,'#ffe2a0','left');tx('♥'.repeat(Math.max(0,F.oh))+' '+F.op.nm,x0+480,y0+30,'bold 19px '+SANS,'#ffb8a0','right');
+  const bx0=x0+24,bw=452,by=y0+52;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(bx0,by,bw,22);ctx.fillStyle='rgba(240,200,90,.55)';ctx.fillRect(bx0+bw*(F.zc-F.zw/2),by,bw*F.zw,22);ctx.strokeStyle='#f0d080';ctx.lineWidth=2;ctx.strokeRect(bx0+bw*(F.zc-F.zw/2),by,bw*F.zw,22);
+  ctx.fillStyle='#fff';ctx.fillRect(bx0+bw*F.bp-3,by-4,6,30);tx(KT('光标进金框按 J 喝彩','光标进金框点「点」喝彩'),W/2,y0+96,'15px '+SANS,'#d8c49a','center',0);}
+ const b=DS.boss;if(b&&!b.ko){ink(220,H-52,520,40,.95);ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(234,H-26,492,8);const g=ctx.createLinearGradient(234,0,726,0);g.addColorStop(0,'#5a1418');g.addColorStop(1,'#d6b04a');ctx.fillStyle=g;ctx.fillRect(234,H-26,492*b.hp/b.max,8);tx('“金扇” 钱夫人',W/2,H-31,'bold 18px '+SERIF,'#ead39a','center');}
+ if(CUT&&LV==2&&!DS.go&&!DS.won){const n=3-Math.floor(CUT.t/60);ctx.save();ctx.globalAlpha=1-(CUT.t%60)/70;bigTitle(n>0?String(n):'跑！',H/2+30,120);ctx.restore();}
+ if(toastT>0){ctx.save();ctx.globalAlpha=Math.min(1,toastT/30);ctx.font='bold 23px '+SANS;const w=ctx.measureText(toast).width+60;ink(W/2-w/2,140,w,48);tx(toast,W/2,172,'bold 23px '+SANS,CREAM,'center');ctx.restore();}
+ if(dlg){const y0=H-200;ink(16,y0,W-32,188,.97);ctx.clearRect(PORT.x,PORT.y,PORT.w,PORT.h);ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.strokeRect(PORT.x-1,PORT.y-1,PORT.w+2,PORT.h+2);
+  seal(dlg.name,200,y0-18,21);ctx.fillStyle='#f3e8d0';ctx.font='26px '+SANS;ctx.textAlign='left';wrap(dlg.lines[dlg.i],204,y0+66,W-260,38);
+  if(dlg.choices&&dlg.i==dlg.lines.length-1){if(!TOUCH){ctx.font='bold 19px '+SANS;dlg.choices.forEach((c,k)=>{const t='['+(k+1)+'] '+c[0],w=Math.min(ctx.measureText(t).width+24,330),x=204+k*340;ctx.fillStyle='rgba(200,168,106,.16)';rrect(x,H-56,w,32,3);ctx.fill();ctx.strokeStyle='rgba(200,168,106,.6)';ctx.stroke();tx(t,x+12,H-34,'bold 19px '+SANS,'#ead39a','left',0);});}}
+  else{ctx.globalAlpha=.6+.4*Math.sin(tick/10);tx('▼ '+KT('E / 空格 继续','点屏幕 继续'),W-40,H-28,'18px '+SANS,'#d8c49a','right',0);ctx.globalAlpha=1;}}}
+function dLabels(){for(const n of NPCS[area]||[]){const C=CAST[n.id],[a,b]=pp(n.x*T+16,n.y*T+16,1.95);label(C?C.role+'·'+C.name:n.name,a,b,17,'#ead39a');}
+ for(const e of ents){if(e.hp<=0||e.area!=area)continue;const d=Math.hypot(e.x-P.x,e.y-P.y);
+  if(e.g){if(e.ko){if(d<160){const [a,b]=pp(e.x,e.y,.8);tx('晕',a,b,'bold 20px '+SERIF,'#ffe08a','center',.9);}continue;}const [a,b]=pp(e.x,e.y,2.05);
+   if(e.stun>0)tx('定 '+Math.ceil(e.stun/60),a,b,'bold 20px '+SERIF,'#9affd0','center',.9);else if(e.chase)tx('！',a,b,'bold 30px '+SERIF,'#ff5a3a','center',.9);else if(e.see>.05)tx(e.see>.5?'！':'？',a,b,'bold 30px '+SERIF,e.see>.5?'#ff5a3a':'#ffd24a','center',.9);else if(d<170)tx(e.nm,a,b-4,'bold 17px '+SANS,'#f0dcc0','center',.9);
+   if(e.chase&&e.hp<e.max){ctx.fillStyle='#a8402e';ctx.fillRect(a-18,b+4,36*e.hp/e.max,4);}continue;}
+  if(e.rival){const [a,b]=pp(e.x,e.y,2.05+e.jz);tx(e.stun>0?e.nm+' 晕':e.nm,a,b,'bold 17px '+SANS,'#f0dcc0','center',.9);continue;}
+  if(e.t=='hog'){const [a,b]=pp(e.x,e.y,.9);if(e.tel)tx('！',a,b-6,'bold 28px '+SERIF,'#ff5a3a','center',.9);else if(d<180)tx(e.stun>0?'刺猬(缩)':'刺猬',a,b,'bold 16px '+SANS,'#f0dcc0','center',.9);continue;}
+  if(e.t=='gamb'){const [a,b]=pp(e.x,e.y,2.05);tx(e.calm?'消停了':'赌徒',a,b,'bold 17px '+SANS,e.calm?'#9affd0':'#ffb8a0','center',.9);continue;}
+  if(e.roo){const [a,b]=pp(e.x,e.y,1.05);tx(e.nm,a,b,'bold 18px '+SERIF,'#ffe2a0','center',.9);continue;}
+  if(e.isBoss&&!e.ko){const [a,b]=pp(e.x,e.y,2.2);tx(e.st==1||e.st==3?'！':'钱夫人',a,b,e.st==1||e.st==3?'bold 30px '+SERIF:'bold 18px '+SANS,e.st?'#ff5a3a':'#f0dcc0','center',.9);}}
+ for(const it of LOOT){if(it.got||it.off||it.carried)continue;const [a,b]=pp(it.x,it.y,1.5);label(it.n,a,b,17,'#ffe8a8');}
+ if(LV==2&&!DS.won&&RCP[DS.cp]){const c=RCP[DS.cp],[a,b]=pp(c[0]*T,c[1]*T,2.4);label(DS.cp==RCP.length-1?'终点 · 长老脚下':'下一面旗',a,b,16,'#ffe8a8');}
+ if(HIDE){const [a,b]=pp(P.x,P.y,1.9);tx('屏息',a,b,'bold 16px '+SANS,'#9ad0ff','center',.9);}
+ for(const f of floats){const [a,b]=pp(f.x,f.y,1.9+(50-Math.min(50,f.l))*.012);tx(f.s,a,b,'bold 21px '+SANS,'#ffd98a','center',.9);}}
+function dDraw(){if(mode=='drecap'){const E=DLV[LV],f='23px '+SANS;card(E.t+' · 完',[...splitL(E.gag,680,f),'',...splitL('“'+E.moral+'”',680,f),'',LV<4?'解锁：'+DLV[LV+1].t:'盗圣传 · 全篇通关！'],KT('按 回车 看下一回','点屏幕 看下一回').replace('下一回',LV<4?'下一回':'结局'),220);return;}
+ if(mode=='dend'){card('盗圣传 · 完',['玉麒麟还回了王府，御膳……已经吃了。','盗圣乔不留金盆洗手，在同难客栈当了跑堂。','钱夫人改行卖鸡蛋，据说生意不错。','','“有难同当——这一难，他替她当了。”'],KT('按 回车 返回选关','点屏幕 返回选关'),230);return;}
+ dLabels();dHUD();
+ if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('乔不留失手了',H/2-50,56);tx(REASON,W/2,H/2+14,'bold 24px '+SANS,'#ffb8a0','center');splitL(QUIP,700,'21px '+SANS).forEach((s,i)=>tx(s,W/2,H/2+52+i*30,'21px '+SANS,'#efe2c4','center'));tx(KT('按回车重来本回 · Esc 暂停回标题','点屏幕重来本回'),W/2,H/2+130,'bold 20px '+SANS,'#ead39a','center');}}
+{const _d=drawUI;drawUI=function(){if(mode=='chap'||mode=='dsel'||CH=='dao'&&['play','over','drecap','dend'].includes(mode)){ctx=MC;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);ctx.clearRect(0,0,W,H);ctx.globalAlpha=1;
+  if(mode=='chap')drawChap();else if(mode=='dsel')drawDsel();else dDraw();return;}_d();};}
+
+// ---------- 选关 & 输入 ----------
+const inR=(p,r)=>p[0]>=r.x&&p[0]<=r.x+r.w&&p[1]>=r.y&&p[1]<=r.y+r.h;
+function pickChap(i){CSEL=i;sfx('stage');if(i==0){CH='ma';mode='cast';}else{mode='dsel';DSEL=Math.min(dUnl(),4);}}
+function pickLv(i){if(i>dUnl()){note('先通关前一回才能解锁');sfx('bad');return;}dStart(i);}
+function selUpdate(){tick++;if(toastT>0)toastT--;const tp=TAPQ;TAPQ=null;
+ if(mode=='chap'){if(tp){CARD.forEach((r,i)=>{if(inR(tp,r))pickChap(i);});return;}
+  if(hit('ArrowLeft')||hit('KeyA'))CSEL=0;if(hit('ArrowRight')||hit('KeyD'))CSEL=1;if(hit('Digit1'))pickChap(0);else if(hit('Digit2'))pickChap(1);else if(hit('Enter')||hit('Space'))pickChap(CSEL);else if(hit('Escape')||hit('Backspace'))mode='title';return;}
+ if(mode=='dsel'){if(tp){if(inR(tp,BACK)){mode='chap';return;}for(let i=0;i<5;i++)if(inR(tp,LCARD(i))){DSEL=i;pickLv(i);}return;}
+  if(hit('ArrowLeft')||hit('KeyA'))DSEL=(DSEL+4)%5;if(hit('ArrowRight')||hit('KeyD'))DSEL=(DSEL+1)%5;for(let i=0;i<5;i++)if(hit('Digit'+(i+1)))DSEL=i;
+  if(hit('Enter')||hit('Space'))pickLv(DSEL);else if(hit('Escape')||hit('Backspace'))mode='chap';}}
+{const _u=update;update=function(){if(mode=='title'){CH='ma';if(hit('Enter')||hit('Space')){sfx('stage');mode='chap';TAPQ=null;tick++;return;}}
+ if(mode=='chap'||mode=='dsel'){selUpdate();return;}TAPQ=null;
+ if(CH=='dao'&&['play','over','drecap','dend'].includes(mode)){dUpdate();return;}_u();};}
+const cxy=(x,y)=>[(x-CR.l)/CR.w*W,(y-CR.t)/CR.h*H];
+[cv,gcv].forEach(el=>{el.addEventListener('touchstart',e=>{const t=e.changedTouches[0];if(mode=='chap'||mode=='dsel')TAPQ=cxy(t.clientX,t.clientY);},{passive:true});el.addEventListener('mousedown',e=>{if(mode=='chap'||mode=='dsel')TAPQ=cxy(e.clientX,e.clientY);});});
+const BL={ma:{KeyJ:'勺',KeyE:'谈',KeyK:'闪',KeyQ:'包',KeyL:'椒'},dao:{KeyJ:'点',KeyE:'谈',KeyK:'闪',KeyQ:'隐',KeyL:'跃'}};let blS='';
+{const _s=uiSync;uiSync=function(){_s();const k=CH=='dao'?'dao':'ma';if(k!=blS){blS=k;document.querySelectorAll('#btns .b[data-k]').forEach(b=>{b.textContent=BL[k][b.dataset.k];});}
+ if(CH=='dao'&&mode=='play'&&LV==3&&DS.ph=='fight'){document.getElementById('joy').style.visibility='hidden';}};}
+window.__dao={get LV(){return LV},get DS(){return DS},get DET(){return DET},set DET(v){DET=v},get CH(){return CH},get CUT(){return CUT},get LOOT(){return LOOT},get HIDE(){return HIDE},dStart,dUnl,dSetUnl,get mode(){return mode},set mode(v){mode=v},LS,RCP,
+ tap(x,y){TAPQ=[x,y];},stunAll(){ents.forEach(e=>{if(e.g&&!e.chase)e.stun=99999;});}};
+
 </script></body></html>
