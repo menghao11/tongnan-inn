@@ -4468,9 +4468,8 @@ function loop(){let ran=false;if(!paused){if(HS>0){HS--;}else{update();ran=true;
 window.__game={get mode(){return mode},set mode(v){mode=v},get ph(){return ph},set ph(v){ph=v},get EP(){return EP},get area(){return area},get ents(){return ents},get items(){return items},get dlg(){return dlg},set dlg(v){dlg=v},get carry(){return carry},get order(){return order},get served(){return served},P,TB,startEP,enter,onEnter,talk,get paused(){return paused},get GL(){return GL}};
 loop();
 </script><script>
-"use strict";
 // ================= 乔不留 · 盗圣传（第六至十回）=================
-let CH='ma',LV=0,DSEL=0,CSEL=1,TAPQ=null,QF=null,DS={},DET=0,ST=100,HIDE=false,LOOT=[],PJ=[],CUT=null,REASON='',QUIP='';
+let CH='ma',LV=0,DSEL=0,LSEL=0,CSEL=1,TAPQ=null,QF=null,DS={},DET=0,ST=100,HIDE=false,LOOT=[],PJ=[],CUT=null,REASON='',QUIP='';
 const DSAVE='tongnan_dao_v1';
 function dUnl(){try{return Math.min(4,+(localStorage.getItem(DSAVE)||0))}catch(e){return 0}}
 function dSetUnl(n){try{if(n>dUnl())localStorage.setItem(DSAVE,String(Math.min(4,n)))}catch(e){}}
@@ -4796,7 +4795,7 @@ function mkDish(c){const g=new THREE.Group();cyl(g,.24,.17,.05,M('#e8dcc4',{roug
  for(let i=0;i<3;i++)bx(g,.04,.02,.04,M('#4a7a30'),-.06+i*.06,.14,.02,0);return beam(g,'#ffd27a');}
 function mkRing(c,r=.6){const m=new THREE.Mesh(new THREE.RingGeometry(r*.82,r,28),new THREE.MeshBasicMaterial(ADD({color:c,opacity:.8,side:THREE.DoubleSide})));m.rotation.x=-Math.PI/2;return m;}
 function mkFlag(c){const g=new THREE.Group();cyl(g,.03,.04,2,M('#3a2414'),0,1,0,5);const f=bx(g,.6,.4,.02,M(c),.31,1.75,0,0);g.userData.f=f;return g;}
-function dPre(dw){if(CH=='dao'){if(!QF){QF=figFor('heroQ',()=>fig('qiao'));QF.userData.post=heroPose;}heroF=QF;}else if(QF&&heroF===QF)heroF=FIGS.get('hero')||null;
+function dPre(dw){if(CH=='dao'){if(!QF){QF=figFor('heroQ',()=>fig('qiao'));QF.userData.post=heroPose;}heroF=QF;}else if(CH=='lv'){if(!window.LF){window.LF=figFor('heroL',()=>fig('wen'));LF.userData.post=typeof heroPoseL==='function'?heroPoseL:null;}heroF=LF;}else if((QF&&heroF===QF)||(window.LF&&heroF===LF))heroF=FIGS.get('hero')||null;
  if(!DG)return;DG.visible=dw;if(!dw)return;DG.children.forEach(o=>o.userData.u=0);
  if(heroF)heroF.position.y=P.jz;
  // 灯光跟随灯笼
@@ -4837,26 +4836,28 @@ function entPose(e,f){const u=f.userData;f.rotation.x=0;f.rotation.z=0;if(e.frz>
  if(e.rival&&e.stun>0)u.H.rotation.z=Math.sin(tick*.5)*.3;
  if(e.isBoss&&e.st==1){u.arms[1].rotation.x=-2.6;u.b.rotation.x=-.2;}if(e.isBoss&&e.st==2)u.b.rotation.x=.4;if(e.isBoss&&e.st==3){u.arms[1].rotation.x=-1.6;u.arms[1].rotation.z=-.6;}
  if(e.see>.25&&e.g){u.H.rotation.y=0;}}
-{const _r=render3D;render3D=function(){if(!GL)return;if(mode=='chap'||mode=='dsel'){selRender();return;}const dw=CH=='dao'&&(mode=='play'||mode=='over');dPre(dw);_r();};}
+{const _r=render3D;render3D=function(){if(!GL)return;if(mode=='chap'||mode=='dsel'||mode=='lsel'){selRender();return;}const dw=(CH=='dao'||CH=='lv')&&(mode=='play'||mode=='over');if(CH=='lv'&&typeof lPre==='function')lPre(dw);else dPre(dw);_r();};}
 function selRender(){townTick();setEnv('inn');FIGS.forEach(f=>f.visible=false);if(DG)DG.visible=false;HL.visible=false;SLASH.userData.m.opacity=0;SPK.forEach(m=>m.visible=false);FXS.forEach(m=>m.visible=false);
  LINE.visible=true;LINE.children.forEach(f=>f.visible=false);const t=performance.now()/1000;camT.set(15,1.0,10);camP.set(15,1.9,16.2);cam.position.copy(camP);cam.lookAt(camT);cam.updateMatrixWorld();
- if(mode=='chap'){[['ma',0],['qiao',1]].forEach(([id,i])=>{const f=LINE['f_'+id];f.visible=true;const tx=CARD[i].x+CARD[i].w/2,[sx]=proj(f.position.x,1,10);f.position.x+=(tx-sx)*.004;f.position.z=10;f.position.y=0;
-  const on=CSEL==i;f.rotation.y=on?Math.sin(t*1.2)*.25:(i?-.5:.5);f.userData.b.position.y=on?Math.abs(Math.sin(t*3))*.04:0;f.userData.H.rotation.y=Math.sin(t*.7+i)*.2;const s=on?1.06:.96;f.scale.setScalar(s*(id=='ma'?1:1));});}
+ if(mode=='chap'){[['ma',0],['qiao',1],['wen',2]].forEach(([id,i])=>{const f=LINE['f_'+id];f.visible=true;const tx=CARD[i].x+CARD[i].w/2,[sx]=proj(f.position.x,1,10);f.position.x+=(tx-sx)*.004;f.position.z=10;f.position.y=0;
+  const on=CSEL==i;f.rotation.y=on?Math.sin(t*1.2)*.25:(i-1)*.45;f.userData.b.position.y=on?Math.abs(Math.sin(t*3))*.04:0;f.userData.H.rotation.y=Math.sin(t*.7+i)*.2;f.scale.setScalar(on?1.05:.92);});}
  sun.position.set(camT.x-7,camT.y+15,camT.z+5);sun.target.position.copy(camT);GL.setScissorTest(false);GL.setViewport(0,0,GR.w,GR.h);GL.render(scene,cam);}
 
 // ---------- 界面 ----------
-const CARD=[{x:118,y:96,w:340,h:470},{x:502,y:96,w:340,h:470}];
+const CARD=[{x:28,y:110,w:288,h:430},{x:336,y:110,w:288,h:430},{x:644,y:110,w:288,h:430}];
 const LCARD=i=>({x:34+i*182,y:150,w:166,h:330}),BACK={x:22,y:20,w:118,h:46};
 function splitL(s,w,font){ctx.font=font;const out=[];let line='';for(const ch of s){if(ctx.measureText(line+ch).width>w&&!'，。！？、”）：；…'.includes(ch)){out.push(line);line='';}line+=ch;}if(line)out.push(line);return out;}
 function frame(r,on,fill){ctx.save();ctx.fillStyle=fill;rrect(r.x,r.y,r.w,r.h,6);ctx.fill();ctx.lineWidth=on?3:1.4;ctx.strokeStyle=on?'#f0d080':'rgba(200,168,106,.6)';if(on){ctx.shadowColor='rgba(255,210,120,.8)';ctx.shadowBlur=16;}rrect(r.x,r.y,r.w,r.h,6);ctx.stroke();ctx.restore();
  ctx.strokeStyle=GOLD;ctx.lineWidth=2;const c=12;[[r.x+4,r.y+4,1,1],[r.x+r.w-4,r.y+4,-1,1],[r.x+4,r.y+r.h-4,1,-1],[r.x+r.w-4,r.y+r.h-4,-1,-1]].forEach(([a,b,sx,sy])=>{ctx.beginPath();ctx.moveTo(a,b+sy*c);ctx.lineTo(a,b);ctx.lineTo(a+sx*c,b);ctx.stroke();});}
-function drawChap(){shade(.5,.12);bigTitle('同难客栈',70,48);tx('选 择 篇 章',W/2,88+24,'20px '+SERIF,'#e2c88e','center');
- const D=[{nm:'李大嘴篇',sub:'同难客栈 · 第一至五回',d:['大厨李大嘴，挥勺护店','上菜 · 抓贼 · 招亲 · 采药 · 守店']},{nm:'乔不留 · 盗圣传',sub:'第六至十回 · 新篇',d:['神偷乔不留，如何成了盗圣','王府 · 皇宫 · 轻功 · 斗鸡 · 救人']}];
- CARD.forEach((r,i)=>{const on=CSEL==i;frame(r,on,on?'rgba(40,26,14,.22)':'rgba(10,7,5,.38)');const y0=r.y+r.h-150;ink(r.x+10,y0,r.w-20,140,.94);
-  seal(i?'新':'壹',r.x+20,r.y+16,18);tx(D[i].nm,r.x+r.w/2,y0+40,'bold 28px '+SERIF,on?'#f6e2a8':'#d8c49a','center');tx(D[i].sub,r.x+r.w/2,y0+70,'17px '+SANS,'#cdbb94','center');
-  D[i].d.forEach((s,k)=>tx(s,r.x+r.w/2,y0+98+k*25,'17px '+SANS,'#efe2c4','center'));
-  if(i==1){const u=dUnl()+1;tx('已解锁 '+u+'/5',r.x+r.w-20,r.y+38,'bold 16px '+SANS,'#ead39a','right');}});
- prompt(KT('← → 选择 · 回车 确认 · Esc 返回','点一张卡片开始'),H-30);}
+function drawChap(){shade(.5,.12);bigTitle('同难客栈',58,42);tx('选 择 篇 章',W/2,92,'18px '+SERIF,'#e2c88e','center');
+ const D=[{nm:'李大嘴篇',sub:'第一至五回',seal:'壹',d:['大厨挥勺护店','上菜·抓贼·招亲']},{nm:'乔不留·盗圣传',sub:'第六至十回',seal:'新',d:['神偷如何成盗圣','王府·皇宫·轻功']},{nm:'吕秀才篇',sub:'第十一至十五回',seal:'文',d:['关中大侠的诞生','诗战·断案·嘴遁']}];
+ CARD.forEach((r,i)=>{const on=CSEL==i;frame(r,on,on?'rgba(40,26,14,.22)':'rgba(10,7,5,.38)');const y0=r.y+r.h-132;ink(r.x+8,y0,r.w-16,120,.94);
+ seal(D[i].seal,r.x+14,r.y+14,16);tx(D[i].nm,r.x+r.w/2,y0+34,'bold 24px '+SERIF,on?'#f6e2a8':'#d8c49a','center');tx(D[i].sub,r.x+r.w/2,y0+60,'15px '+SANS,'#cdbb94','center');
+ D[i].d.forEach((line,k)=>tx(line,r.x+r.w/2,y0+86+k*22,'15px '+SANS,'#efe2c4','center'));
+ if(i==1)tx('已解锁 '+(dUnl()+1)+'/5',r.x+r.w-12,r.y+34,'bold 14px '+SANS,'#ead39a','right');
+ if(i==2&&typeof lUnl==='function')tx('已解锁 '+(lUnl()+1)+'/5',r.x+r.w-12,r.y+34,'bold 14px '+SANS,'#ead39a','right');});
+ prompt(KT('← → 选择 · 回车 确认 · Esc 返回','点一张卡片开始'),H-28);}
+
 function drawDsel(){shade(.7,.45);bigTitle('乔不留 · 盗圣传',96,46);tx('神偷是怎么炼成的',W/2,134,'20px '+SERIF,'#e2c88e','center');const u=dUnl();
  for(let i=0;i<5;i++){const r=LCARD(i),on=DSEL==i,lk=i>u;frame(r,on,lk?'rgba(10,7,5,.75)':'rgba(30,20,12,.82)');const E=DLV[i];const [a,b]=E.t.split(' · ');
   seal(a,r.x+r.w/2-30,r.y+16,18);ctx.globalAlpha=lk?.45:1;splitL(b,r.w-24,'bold 22px '+SERIF).forEach((s,k)=>tx(s,r.x+r.w/2,r.y+96+k*30,'bold 22px '+SERIF,on?'#f6e2a8':'#e6cf98','center'));
@@ -4900,28 +4901,268 @@ function dDraw(){if(mode=='drecap'){const E=DLV[LV],f='23px '+SANS;card(E.t+' ·
  if(mode=='dend'){card('盗圣传 · 完',['玉麒麟还回了王府，御膳……已经吃了。','盗圣乔不留金盆洗手，在同难客栈当了跑堂。','钱夫人改行卖鸡蛋，据说生意不错。','','“有难同当——这一难，他替她当了。”'],KT('按 回车 返回选关','点屏幕 返回选关'),230);return;}
  dLabels();dHUD();
  if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('乔不留失手了',H/2-50,56);tx(REASON,W/2,H/2+14,'bold 24px '+SANS,'#ffb8a0','center');splitL(QUIP,700,'21px '+SANS).forEach((s,i)=>tx(s,W/2,H/2+52+i*30,'21px '+SANS,'#efe2c4','center'));tx(KT('按回车重来本回 · Esc 暂停回标题','点屏幕重来本回'),W/2,H/2+130,'bold 20px '+SANS,'#ead39a','center');}}
-{const _d=drawUI;drawUI=function(){if(mode=='chap'||mode=='dsel'||CH=='dao'&&['play','over','drecap','dend'].includes(mode)){ctx=MC;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);ctx.clearRect(0,0,W,H);ctx.globalAlpha=1;
-  if(mode=='chap')drawChap();else if(mode=='dsel')drawDsel();else dDraw();return;}_d();};}
+{const _d=drawUI;drawUI=function(){if(mode=='chap'||mode=='dsel'||mode=='lsel'||CH=='dao'&&['play','over','drecap','dend'].includes(mode)||CH=='lv'&&['play','over','lrecap','lend'].includes(mode)){ctx=MC;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);ctx.clearRect(0,0,W,H);ctx.globalAlpha=1;
+  if(mode=='chap')drawChap();else if(mode=='dsel')drawDsel();else if(mode=='lsel'&&typeof drawLsel==='function')drawLsel();else if(CH=='lv'&&typeof lDraw==='function')lDraw();else dDraw();return;}_d();};}
 
 // ---------- 选关 & 输入 ----------
 const inR=(p,r)=>p[0]>=r.x&&p[0]<=r.x+r.w&&p[1]>=r.y&&p[1]<=r.y+r.h;
-function pickChap(i){CSEL=i;sfx('stage');if(i==0){CH='ma';mode='cast';}else{mode='dsel';DSEL=Math.min(dUnl(),4);}}
+function pickChap(i){CSEL=i;sfx('stage');if(i==0){CH='ma';mode='cast';}else if(i==1){mode='dsel';DSEL=Math.min(dUnl(),4);}else{mode='lsel';LSEL=Math.min(typeof lUnl==='function'?lUnl():0,4);}}
 function pickLv(i){if(i>dUnl()){note('先通关前一回才能解锁');sfx('bad');return;}dStart(i);}
 function selUpdate(){tick++;if(toastT>0)toastT--;const tp=TAPQ;TAPQ=null;
  if(mode=='chap'){if(tp){CARD.forEach((r,i)=>{if(inR(tp,r))pickChap(i);});return;}
-  if(hit('ArrowLeft')||hit('KeyA'))CSEL=0;if(hit('ArrowRight')||hit('KeyD'))CSEL=1;if(hit('Digit1'))pickChap(0);else if(hit('Digit2'))pickChap(1);else if(hit('Enter')||hit('Space'))pickChap(CSEL);else if(hit('Escape')||hit('Backspace'))mode='title';return;}
+  if(hit('ArrowLeft')||hit('KeyA'))CSEL=(CSEL+2)%3;if(hit('ArrowRight')||hit('KeyD'))CSEL=(CSEL+1)%3;if(hit('Digit1'))pickChap(0);else if(hit('Digit2'))pickChap(1);else if(hit('Digit3'))pickChap(2);else if(hit('Enter')||hit('Space'))pickChap(CSEL);else if(hit('Escape')||hit('Backspace'))mode='title';return;}
  if(mode=='dsel'){if(tp){if(inR(tp,BACK)){mode='chap';return;}for(let i=0;i<5;i++)if(inR(tp,LCARD(i))){DSEL=i;pickLv(i);}return;}
   if(hit('ArrowLeft')||hit('KeyA'))DSEL=(DSEL+4)%5;if(hit('ArrowRight')||hit('KeyD'))DSEL=(DSEL+1)%5;for(let i=0;i<5;i++)if(hit('Digit'+(i+1)))DSEL=i;
-  if(hit('Enter')||hit('Space'))pickLv(DSEL);else if(hit('Escape')||hit('Backspace'))mode='chap';}}
+  if(hit('Enter')||hit('Space'))pickLv(DSEL);else if(hit('Escape')||hit('Backspace'))mode='chap';return;}
+ if(mode=='lsel'&&typeof lSelUpdate==='function'){lSelUpdate(tp);}}
 {const _u=update;update=function(){if(mode=='title'){CH='ma';if(hit('Enter')||hit('Space')){sfx('stage');mode='chap';TAPQ=null;tick++;return;}}
- if(mode=='chap'||mode=='dsel'){selUpdate();return;}TAPQ=null;
- if(CH=='dao'&&['play','over','drecap','dend'].includes(mode)){dUpdate();return;}_u();};}
+ if(mode=='chap'||mode=='dsel'||mode=='lsel'){selUpdate();return;}TAPQ=null;
+ if(CH=='dao'&&['play','over','drecap','dend'].includes(mode)){dUpdate();return;}
+ if(CH=='lv'&&['play','over','lrecap','lend'].includes(mode)&&typeof lUpdate==='function'){lUpdate();return;}_u();};}
 const cxy=(x,y)=>[(x-CR.l)/CR.w*W,(y-CR.t)/CR.h*H];
-[cv,gcv].forEach(el=>{el.addEventListener('touchstart',e=>{const t=e.changedTouches[0];if(mode=='chap'||mode=='dsel')TAPQ=cxy(t.clientX,t.clientY);},{passive:true});el.addEventListener('mousedown',e=>{if(mode=='chap'||mode=='dsel')TAPQ=cxy(e.clientX,e.clientY);});});
-const BL={ma:{KeyJ:'勺',KeyE:'谈',KeyK:'闪',KeyQ:'包',KeyL:'椒'},dao:{KeyJ:'点',KeyE:'谈',KeyK:'闪',KeyQ:'隐',KeyL:'跃'}};let blS='';
-{const _s=uiSync;uiSync=function(){_s();const k=CH=='dao'?'dao':'ma';if(k!=blS){blS=k;document.querySelectorAll('#btns .b[data-k]').forEach(b=>{b.textContent=BL[k][b.dataset.k];});}
- if(CH=='dao'&&mode=='play'&&LV==3&&DS.ph=='fight'){document.getElementById('joy').style.visibility='hidden';}};}
+[cv,gcv].forEach(el=>{el.addEventListener('touchstart',e=>{const t=e.changedTouches[0];if(mode=='chap'||mode=='dsel'||mode=='lsel')TAPQ=cxy(t.clientX,t.clientY);},{passive:true});el.addEventListener('mousedown',e=>{if(mode=='chap'||mode=='dsel'||mode=='lsel')TAPQ=cxy(e.clientX,e.clientY);});});
+const BL={ma:{KeyJ:'勺',KeyE:'谈',KeyK:'闪',KeyQ:'包',KeyL:'椒'},dao:{KeyJ:'点',KeyE:'谈',KeyK:'闪',KeyQ:'隐',KeyL:'跃'},lv:{KeyJ:'子曰',KeyE:'谈',KeyK:'闪',KeyQ:'嘴遁',KeyL:'书'}};let blS='';
+{const _s=uiSync;uiSync=function(){_s();const k=CH=='dao'?'dao':CH=='lv'?'lv':'ma';if(k!=blS){blS=k;document.querySelectorAll('#btns .b[data-k]').forEach(b=>{b.textContent=BL[k][b.dataset.k];});}
+ if(CH=='dao'&&mode=='play'&&LV==3&&DS.ph=='fight'){document.getElementById('joy').style.visibility='hidden';}
+ if(CH=='lv'&&mode=='play'&&window.__lv&&__lv.LS&&__lv.LS[LV]&&__lv.LS[LV].noJoy)document.getElementById('joy').style.visibility='hidden';};}
 window.__dao={get LV(){return LV},get DS(){return DS},get DET(){return DET},set DET(v){DET=v},get CH(){return CH},get CUT(){return CUT},get LOOT(){return LOOT},get HIDE(){return HIDE},dStart,dUnl,dSetUnl,get mode(){return mode},set mode(v){mode=v},LS,RCP,
  tap(x,y){TAPQ=[x,y];},get VOXB(){return !!VOXB},stunAll(){ents.forEach(e=>{if(e.g&&!e.chase)e.stun=99999;});}};
+</script>
+<script>
+// ================= 吕秀才篇（第十一至十五回）=================
+const LSAVE='tongnan_lv_v1';
+function lUnl(){try{return Math.min(4,+(localStorage.getItem(LSAVE)||0))}catch(e){return 0}}
+function lSetUnl(n){try{if(n>lUnl())localStorage.setItem(LSAVE,String(Math.min(4,n)))}catch(e){}}
+const LAREA=['street','inn','street','inn','street'];
+const LLV=[
+ {t:'第十一回 · 关中大侠的诞生',s:'误打误撞',d:'书生落难，却成了关中大侠',gag:'乡亲：“关中大侠！” 吕秀才：“我……我只是背错了《论语》。”',moral:'名号有时是别人喊出来的，跟你会不会打架没关系。'},
+ {t:'第十二回 · 智斗鸡无病',s:'诗词对决',d:'连对五联，压倒病秧子诗仙',gag:'鸡无病：“你这算诗吗？” 吕秀才：“子曰：能押韵就行。”',moral:'嘴仗赢了不丢人，输了也别打人。'},
+ {t:'第十三回 · 争风吃醋',s:'劝架',d:'二丫与芙蓉抢人，子曰劝和',gag:'二丫：“他是我的！” 芙蓉：“他是书的！” 吕秀才：“我是我的……”',moral:'劝架要站中间——但别站太中间。'},
+ {t:'第十四回 · 吕秀才断案',s:'谁偷了鸡',d:'问话、找线索、指认真凶',gag:'真凶：“你怎知是我？” 吕秀才：“子曰：偷鸡的人，手里有毛。”',moral:'断案靠脑子，不靠嗓门。'},
+ {t:'第十五回 · 嘴遁点穴',s:'联手乔不留',d:'嘴遁拖住恶霸，点穴五次',gag:'恶霸：“你废话真多！” 吕秀才：“子曰：废话也是话。”',moral:'秀才的嘴，盗圣的手——同难才是一家人。'}];
+const LN='吕秀才';
+let LLS=[],LSTATE={},LVOXB=null,LVOXL=0,LKT=0,ZiYueT=0;
+const ZIYUE64="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";
+function lAC(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state=='suspended')AC.resume();if(!LVOXB&&!LVOXL){LVOXL=1;const b=Uint8Array.from(atob(ZIYUE64),c=>c.charCodeAt(0)).buffer;AC.decodeAudioData(b,x=>{LVOXB=x;},()=>{LVOXL=0;});}}catch(e){}}
+['touchstart','touchend','mousedown','keydown'].forEach(t=>window.addEventListener(t,lAC,{passive:true,capture:true}));
+function playZiYue(){try{lAC();if(!LVOXB)return;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=LVOXB;g.gain.value=1.15;s.connect(g).connect(AC.destination);s.start();
+ const t=AC.currentTime,o=AC.createOscillator(),gg=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(520,t);o.frequency.exponentialRampToValueAtTime(180,t+.12);gg.gain.setValueAtTime(.1,t);gg.gain.exponentialRampToValueAtTime(.001,t+.14);o.connect(gg).connect(AC.destination);o.start(t);o.stop(t+.15);}catch(e){}}
+function shoutZiYue(){if(LKT>0){ZiYueT=55;return;}playZiYue();LKT=90;ZiYueT=55;}
 
-</script></body></html>
+Object.assign(LOOK,{
+ ji:{robe:'#6a8a6a',inner:'#d8e0c8',trim:'#3a5a3a',sash:'#4a6a4a',hs:'long',flare:1.15,tall:1.0,x(u){const gm=M('#2a2622',{metalness:.25});torus(u.H,.034,.006,gm,.046,.012,.122);torus(u.H,.034,.006,gm,-.046,.012,.122);bx(u.H,.03,.006,.006,gm,0,.016,.124,0);
+  // pale sickly cheeks via small greenish spheres
+  sph(u.H,.03,M('#8aaa7a',{transparent:true,opacity:.35}),.07,-.02,.1,5,4,0);sph(u.H,.03,M('#8aaa7a',{transparent:true,opacity:.35}),-.07,-.02,.1,5,4,0);}},
+ bully:{robe:'#4a2a2a',inner:'#c8a888',trim:'#1a1010',sash:'#8a2318',pants:'#1a1412',hs:'short',len:'short',wide:1.28,x(u){hcap(u.H,.145,M('#2a1a14'),0,.03,0,0);bx(u.b,.5,.14,.42,M('#6a3a2a'),0,1.4,0,0);}},
+ fu:{robe:'#c45a7a',inner:'#f2e8e4',skirt:'#e8d8d4',trim:'#8a2a48',sash:'#5a3a8a',floral:1,female:1,hs:'buns',flare:1.18,x(u){const gd=M('#e8c070',{metalness:.55});sph(u.H,.022,gd,.12,.22,-.02,5,4,0);sph(u.H,.022,gd,-.12,.22,-.02,5,4,0);}}});
+Object.assign(PFM,{'吕秀才':'wen','吕轻侯':'wen','鸡无病':'ji','恶霸':'bully','郭芙蓉':'fu','芙蓉':'fu'});
+{const _pf=pfig;pfig=function(name){const id=PFM[name];if(id){if(!PFIG[id]){const f=fig(id);f.rotation.y=-.35;PFIG[id]=f;pScene.add(f);}return PFIG[id];}return _pf(name);};}
+{const _hurt=hurtP;hurtP=function(d,nx,ny){if(CH=='lv'){if(P.inv>0||P.dash>0)return;P.hp-=d;P.inv=50;HS=4;TRA=Math.min(1,TRA+.5);FL=.4;FLC='#c02818';P.kx=nx*5;P.ky=ny*5;sfx('hurt');if(P.hp<=0){P.hp=0;lLose('气血耗尽','吕秀才：“子曰：留得青山在……”');}return;}_hurt(d,nx,ny);};}
+
+function lLose(r,q){if(mode=='over')return;REASON=r;QUIP=q||'';mode='over';dlg=null;CUT=null;sfx('bad');FL=.4;FLC='#c02818';TRA=.6;}
+function lWin(){lSetUnl(LV+1);mode='lrecap';sfx('stage');}
+function lStart(n){CH='lv';LV=n;mode='play';dlg=null;ents=[];items=[];shots=[];parts=[];floats=[];carry=0;P.max=10;P.hp=10;P.inv=0;P.dash=0;P.dcd=0;P.jt=0;P.jz=0;P.fall=0;P.stun=0;P.swing=0;P.cd=0;P.kx=P.ky=0;P.lunge=0;P.ktx=0;
+ LSTATE={};CUT=null;REASON='';ZiYueT=0;LKT=0;toastT=0;area=LAREA[n];NPCS[area]=NPCS[area]||[];P.dir={x:0,y:-1};
+ if(DG)DG.clear();for(const k of FIGS.keys())if(typeof k=='object'){scene.remove(FIGS.get(k));FIGS.delete(k);}
+ LLS[n].init();note(LLV[n].t);sfx('stage');}
+function lMove(o,dx,dy,r){const sf=(x,y)=>'#THKX'.includes(tileAt(x,y));const ok=(x,y)=>!sf(x-r,y-r)&&!sf(x+r,y-r)&&!sf(x-r,y+r)&&!sf(x+r,y+r);if(ok(o.x+dx,o.y))o.x+=dx;if(ok(o.x,o.y+dy))o.y+=dy;}
+
+function heroPoseL(f){if(CH!='lv')return;const u=f.userData;if(P.swing>0){const k=P.swing/12;u.arms[0].rotation.x=-1.4*k;u.arms[1].rotation.x=.5*k;u.b.rotation.x=.15*k;}
+ if(LSTATE.zuib){u.arms[0].rotation.x=-2.2;u.H.rotation.y=Math.sin(tick/6)*.2;}}
+
+function lPre(dw){dPre(dw);if(!dw||!DG)return;
+ if(LSTATE.zuib){const m=own(DS,'_zb',()=>{const g=new THREE.Group();const ring=mkRing('#ffe08a',.7);g.add(ring);return g;});m.position.set(P.x/T,.08,P.y/T);m.scale.setScalar(1.1+.1*Math.sin(tick/5));}
+ for(const e of ents){if(e.hp<=0||e.area!=area)continue;const f=FIGS.get(e);if(f){const u=f.userData;if(e.ang!=null)u.face=e.ang;if(e.calm){f.rotation.z=0;}}}
+}
+
+function drawZiYueText(){if(ZiYueT<=0)return;ZiYueT--;const al=ZiYueT<12?ZiYueT/12:1;let [a,b]=pp(P.x,P.y,2.6);a=Math.max(220,Math.min(W-260,a));b=Math.max(150,Math.min(H-220,b-30));
+ ctx.save();ctx.globalAlpha=al;ctx.translate(a,b);ctx.scale(1.05,1.05);ctx.rotate(-.05);ctx.font='bold 52px '+SERIF;ctx.textAlign='center';ctx.lineJoin='round';ctx.lineWidth=10;ctx.strokeStyle='#2a0a06';ctx.strokeText('子曰',0,0);
+ const g=ctx.createLinearGradient(0,-40,0,8);g.addColorStop(0,'#fff6c8');g.addColorStop(.55,'#f0c040');g.addColorStop(1,'#c0501e');ctx.fillStyle=g;ctx.shadowColor='rgba(255,180,60,.85)';ctx.shadowBlur=16;ctx.fillText('子曰',0,0);ctx.shadowBlur=0;
+ ctx.font='bold 18px '+SANS;ctx.fillStyle='#ead39a';ctx.fillText('（曰读 yuē）',0,28);ctx.restore();}
+
+function lHUD(){const L=LLS[LV],ob='◆ '+(L.obj?L.obj():'');ctx.font='20px '+SANS;const ow=Math.max(470,ctx.measureText(ob).width+40);ink(10,10,ow,78);
+ const sw=seal(LN,22,18,19);const hx=34+sw;tx('气血',hx,40,'17px '+SERIF,GOLD,'left',0);for(let i=0;i<P.max;i++){const on=i<P.hp;ctx.fillStyle=on?(P.hp<=3?'#c0392b':'#a8402e'):'rgba(255,255,255,.08)';ctx.fillRect(hx+40+i*15,28,12,12);}
+ tx(ob,24,76,'20px '+SANS,'#efe0bd');
+ const ttl=LLV[LV].t;ctx.font='bold 20px '+SERIF;const ew=ctx.measureText(ttl).width+36;ink(W-10-ew,10,ew,42);tx(ttl,W-10-ew/2,39,'bold 20px '+SERIF,'#e6cf98','center');
+ if(LSTATE.bar){const B=LSTATE.bar;ink(W/2-160,96,320,34,.9);tx(B.lab,W/2-148,118,'bold 17px '+SERIF,GOLD,'left',0);ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(W/2-70,108,210,10);ctx.fillStyle='#d6b04a';ctx.fillRect(W/2-70,108,210*(B.v/B.max),10);}
+ if(toastT>0&&ZiYueT<=0){ctx.save();ctx.globalAlpha=Math.min(1,toastT/30);ctx.font='bold 23px '+SANS;const w=ctx.measureText(toast).width+60;ink(W/2-w/2,140,w,48);tx(toast,W/2,172,'bold 23px '+SANS,CREAM,'center');ctx.restore();}
+ drawZiYueText();
+ if(dlg){const y0=H-200;ink(16,y0,W-32,188,.97);ctx.clearRect(PORT.x,PORT.y,PORT.w,PORT.h);ctx.strokeStyle=GOLD;ctx.lineWidth=2;ctx.strokeRect(PORT.x-1,PORT.y-1,PORT.w+2,PORT.h+2);
+  seal(dlg.name,200,y0-18,21);ctx.fillStyle='#f3e8d0';ctx.font='26px '+SANS;ctx.textAlign='left';wrap(dlg.lines[dlg.i],204,y0+66,W-260,38);
+  if(dlg.choices&&dlg.i==dlg.lines.length-1){if(!TOUCH){ctx.font='bold 18px '+SANS;dlg.choices.forEach((c,k)=>{const t='['+(k+1)+'] '+c[0],w=Math.min(ctx.measureText(t).width+24,300),x=204+k*320;ctx.fillStyle='rgba(200,168,106,.16)';rrect(x,H-56,w,32,3);ctx.fill();ctx.strokeStyle='rgba(200,168,106,.6)';ctx.stroke();tx(t,x+12,H-34,'bold 18px '+SANS,'#ead39a','left',0);});}}
+  else{ctx.globalAlpha=.6+.4*Math.sin(tick/10);tx('▼ '+KT('E / 空格 继续','点屏幕 继续'),W-40,H-28,'18px '+SANS,'#d8c49a','right',0);ctx.globalAlpha=1;}}}
+
+function lLabels(){for(const n of NPCS[area]||[]){const C=CAST[n.id],[a,b]=pp(n.x*T+16,n.y*T+16,1.95);label(C?C.role+'·'+C.name:n.name,a,b,17,'#ead39a');}
+ for(const e of ents){if(e.hp<=0||e.area!=area)continue;const [a,b]=pp(e.x,e.y,2.05);if(e.nm)tx(e.stun>0?e.nm+' · 定':e.nm,a,b,'bold 17px '+SANS,'#f0dcc0','center',.9);
+  if(e.isBoss&&!e.ko){ink(220,H-52,520,40,.95);ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(234,H-26,492,8);const g=ctx.createLinearGradient(234,0,726,0);g.addColorStop(0,'#5a1418');g.addColorStop(1,'#d6b04a');ctx.fillStyle=g;ctx.fillRect(234,H-26,492*e.hp/e.max,8);tx(e.nm,W/2,H-31,'bold 18px '+SERIF,'#ead39a','center');}}
+ for(const f of floats){const [a,b]=pp(f.x,f.y,1.9+(50-Math.min(50,f.l))*.012);tx(f.s,a,b,'bold 21px '+SANS,'#ffd98a','center',.9);}}
+
+function lDraw(){if(mode=='lrecap'){const E=LLV[LV],f='23px '+SANS;card(E.t+' · 完',[...splitL(E.gag,680,f),'',...splitL('"'+E.moral+'"',680,f),'',LV<4?'解锁：'+LLV[LV+1].t:'吕秀才篇 · 全篇通关！'],KT('按 回车 看下一回','点屏幕 看下一回').replace('下一回',LV<4?'下一回':'结局'),220);return;}
+ if(mode=='lend'){card('吕秀才篇 · 完',['关中大侠的名号，是背错书背出来的。','诗赢了鸡无病，架劝开了，案也断了。','最后靠一张嘴，拖住恶霸，等来了乔不留的点穴。','','“子曰：有难同当。此话，同难客栈当真。”'],KT('按 回车 返回选关','点屏幕 返回选关'),230);return;}
+ lLabels();lHUD();
+ if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('吕秀才失手了',H/2-50,56);tx(REASON,W/2,H/2+14,'bold 24px '+SANS,'#ffb8a0','center');splitL(QUIP,700,'21px '+SANS).forEach((s,i)=>tx(s,W/2,H/2+52+i*30,'21px '+SANS,'#efe2c4','center'));tx(KT('按回车重来本回 · Esc 暂停回标题','点屏幕重来本回'),W/2,H/2+130,'bold 20px '+SANS,'#ead39a','center');}}
+
+function drawLsel(){shade(.7,.45);bigTitle('吕秀才篇',96,46);tx('关中大侠是怎么炼成的',W/2,134,'20px '+SERIF,'#e2c88e','center');const u=lUnl();
+ for(let i=0;i<5;i++){const r=LCARD(i),on=LSEL==i,lk=i>u;frame(r,on,lk?'rgba(10,7,5,.75)':'rgba(30,20,12,.82)');const E=LLV[i];const [a,b]=E.t.split(' · ');
+  seal(a,r.x+r.w/2-30,r.y+16,18);ctx.globalAlpha=lk?.45:1;splitL(b,r.w-24,'bold 22px '+SERIF).forEach((s,k)=>tx(s,r.x+r.w/2,r.y+96+k*30,'bold 22px '+SERIF,on?'#f6e2a8':'#e6cf98','center'));
+  tx(E.s,r.x+r.w/2,r.y+176,'bold 17px '+SANS,'#ead39a','center');splitL(E.d,r.w-26,'16px '+SANS).forEach((s,k)=>tx(s,r.x+r.w/2,r.y+206+k*22,'16px '+SANS,'#efe2c4','center'));ctx.globalAlpha=1;
+  tx(lk?'未解锁':(i<u?'已通关 · 可重玩':'可挑战'),r.x+r.w/2,r.y+r.h-22,'bold 16px '+SANS,lk?'#9a8a70':'#9affd0','center');}
+ frame(BACK,false,'rgba(30,20,12,.85)');tx('‹ 返回',BACK.x+BACK.w/2,BACK.y+31,'bold 20px '+SANS,'#ead39a','center',0);
+ prompt(KT('← → 选择 · 回车 开始 · Esc 返回','点一回开始'),H-60);
+ if(toastT>0){ctx.save();ctx.globalAlpha=Math.min(1,toastT/30);ctx.font='bold 23px '+SANS;const w=ctx.measureText(toast).width+60;ink(W/2-w/2,500,w,48);tx(toast,W/2,532,'bold 23px '+SANS,CREAM,'center');ctx.restore();}}
+
+function pickLLv(i){if(i>lUnl()){note('先通关前一回才能解锁');sfx('bad');return;}lStart(i);}
+function lSelUpdate(tp){tick++;if(toastT>0)toastT--;
+ if(tp){if(inR(tp,BACK)){mode='chap';return;}for(let i=0;i<5;i++)if(inR(tp,LCARD(i))){LSEL=i;pickLLv(i);}return;}
+ if(hit('ArrowLeft')||hit('KeyA'))LSEL=(LSEL+4)%5;if(hit('ArrowRight')||hit('KeyD'))LSEL=(LSEL+1)%5;for(let i=0;i<5;i++)if(hit('Digit'+(i+1)))LSEL=i;
+ if(hit('Enter')||hit('Space'))pickLLv(LSEL);else if(hit('Escape')||hit('Backspace'))mode='chap';}
+
+// ---------- 五回 ----------
+// 第十一回 关中大侠的诞生
+LLS[0]={init(){P.x=15*T;P.y=14*T;LSTATE={wave:0,need:3,ko:0,title:0};area='street';
+  say(LN,['在下吕轻侯，字……字还没想好。乡亲们叫我吕秀才。','今日上街买笔，却撞上几个地痞抢摊。','子曰：见义不为，无勇也。——约！我……我先背书壮胆！'],()=>say(LN,[KT('J 子曰 背书推开地痞 · L 书 砸出纸卷 · K 闪身','「子曰」背书推开地痞 ·「书」砸纸卷 ·「闪」闪身'),'别被打趴下。打赢了……说不定能混个名号。']));},
+ obj(){return LSTATE.title?'听乡亲喊你一声关中大侠':'击退地痞 '+LSTATE.ko+'/'+LSTATE.need+' 波'},
+ upd(){if(LSTATE.title)return;
+  if(!ents.some(e=>e.thug&&e.hp>0)&&!CUT){if(LSTATE.wave>=LSTATE.need){LSTATE.title=1;say('卖菜大妈',['好！这书生一嗓子“子曰”，地痞全愣住！','从今往后——关中大侠！'],()=>say(LN,['关中……大侠？我只是背书背大声了点……','大妈：“大侠不打架，专背书，新鲜！”'],lWin));return;}
+   LSTATE.wave++;const n=2+LSTATE.wave;for(let i=0;i<n;i++){const x=(3+Math.random()*24)*T,y=(4+Math.random()*10)*T;ents.push({t:'thug',nm:'地痞',x,y,r:12,hp:2,max:2,area,thug:1,ang:0,sp:1.1+LSTATE.wave*.1,hurt:0});}
+   note('第'+LSTATE.wave+'波地痞来了！');}
+  for(const e of ents){if(!e.thug||e.hp<=0)continue;if(e.stun>0){e.stun--;continue;}if(e.hurt>0)e.hurt--;
+   const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy)||1;e.ang=Math.atan2(dy,dx);lMove(e,dx/d*e.sp,dy/d*e.sp,e.r);
+   if(d<e.r+12&&P.inv<=0&&P.dash<=0)hurtP(1,dx/d,dy/d);}
+  // paper projectiles
+  for(const p of (LSTATE.papers||[])){p.x+=p.vx;p.y+=p.vy;p.l--;for(const e of ents){if(!e.thug||e.hp<=0||e.hurt>0)continue;if(Math.hypot(p.x-e.x,p.y-e.y)<18){p.l=0;e.hp--;e.hurt=20;e.stun=40;floats.push({x:e.x,y:e.y,s:['学而时习之！','有朋自远方！','不亦乐乎！'][(Math.random()*3)|0],l:45});sfx('hit');HS=3;fxQ.push({x:e.x,y:e.y,l:10,s:.8});if(e.hp<=0)sfx('coin');}}}
+  LSTATE.papers=(LSTATE.papers||[]).filter(p=>p.l>0);
+  if(!ents.some(e=>e.thug&&e.hp>0)&&LSTATE.wave>0){LSTATE.ko=Math.max(LSTATE.ko,LSTATE.wave);}
+  if(P.hp<=0)lLose('被地痞按在地上摩擦','地痞：“关中大侠？关中大虾还差不多。”');}};
+
+// 第十二回 智斗鸡无病 — poetry duel
+const POEMS=[
+ {q:'春风又绿江南岸，',ok:'明月何时照我还？',bad:['床前明月光，','劝君更尽一杯酒，','不识庐山真面目，']},
+ {q:'山外青山楼外楼，',ok:'西湖歌舞几时休？',bad:['欲穷千里目，','烟花三月下扬州，','白日依山尽，']},
+ {q:'两情若是久长时，',ok:'又岂在朝朝暮暮。',bad:['此时无声胜有声，','天涯何处无芳草，','落花人独立，']},
+ {q:'天生我材必有用，',ok:'千金散尽还复来。',bad:['会当凌绝顶，','黄河之水天上来，','仰天大笑出门去，']},
+ {q:'纸上得来终觉浅，',ok:'绝知此事要躬行。',bad:['读书破万卷，','黑发不知勤学早，','少壮不努力，']},
+ {q:'横看成岭侧成峰，',ok:'远近高低各不同。',bad:['飞流直下三千尺，','不识庐山真面目，','停车坐爱枫林晚，']},
+ {q:'问君能有几多愁，',ok:'恰似一江春水向东流。',bad:['剪不断，理还乱，','车如流水马如龙，','抽刀断水水更流，']},
+ {q:'我住长江头，',ok:'君住长江尾。',bad:['日日思君不见君，','共饮长江水，','此水几时休，']}
+];
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+LLS[1]={noJoy:1,init(){P.x=12*T;P.y=10*T;area='inn';LSTATE={streak:0,need:5,round:0,wait:0};NPCS.inn=[{id:'wen',x:12,y:8,name:'吕秀才'}];
+  ents.push({t:'ji',nm:'鸡无病',x:18*T,y:10*T,r:12,hp:1,max:1,area,noHit:1,ang:Math.PI});
+  say('鸡无病',['听说葫芦镇出了个关中大侠？就你这豆芽菜？','我对诗从来没输过——除了那次……咳咳，病了。','今日，咱们以诗会友。连对五联，算你赢。'],()=>say(LN,['鸡兄请出题。子曰：来者不拒。——约！'],()=>this.next()));},
+ next(){if(LSTATE.streak>=LSTATE.need){say('鸡无病',['（捂胸口）你……你居然连对五联……我病得更重了。'],()=>say(LN,['鸡兄珍重。诗可以再对，身体要紧。'],lWin));return;}
+  const pool=POEMS.filter((_,i)=>!LSTATE.used||!LSTATE.used[i]);const ix=POEMS.indexOf(pool[(Math.random()*pool.length)|0]);
+  LSTATE.used=LSTATE.used||{};LSTATE.used[ix]=1;const P0=POEMS[ix];LSTATE.cur=P0;LSTATE.round++;
+  const opts=shuffle([P0.ok,...P0.bad.slice(0,3)]).map(line=>[line,()=>this.ans(line===P0.ok)]);
+  say('鸡无病',['第'+LSTATE.round+'联——','「'+P0.q+'」'],null,opts);},
+ ans(ok){if(ok){LSTATE.streak++;sfx('coin');floats.push({x:P.x,y:P.y,s:'对！ '+LSTATE.streak+'/'+LSTATE.need,l:60});note('连对 '+LSTATE.streak+'/'+LSTATE.need);
+   say(LN,['（推眼镜）'+LSTATE.cur.ok],()=>{if(LSTATE.streak>=LSTATE.need)this.next();else say('鸡无病',['哼……下一联！'],()=>this.next());});}
+  else{LSTATE.streak=0;sfx('bad');TRA=.4;note('对错了，连对清零！');
+   say('鸡无病',['错！连对断了！从零开始吧，关中大……虾。'],()=>say(LN,['（擦汗）子曰：知错能改……再来。'],()=>this.next()));}},
+ obj(){return '连对诗联 '+LSTATE.streak+'/'+LSTATE.need+'（错则清零）'},
+ upd(){}};
+
+// 第十三回 争风吃醋
+LLS[2]={init(){P.x=15*T;P.y=12*T;area='street';LSTATE={calm:0,need:5,cd:0};NPCS.street=[];
+  const ya={t:'ya',nm:'柳二丫',x:8*T,y:9*T,r:12,hp:1,max:1,area,girl:1,side:-1,ang:0,noHit:1},fu={t:'fu',nm:'郭芙蓉',x:22*T,y:9*T,r:12,hp:1,max:1,area,girl:1,side:1,ang:Math.PI,noHit:1};ents.push(ya,fu);LSTATE.ya=ya;LSTATE.fu=fu;
+  say('柳二丫',['吕秀才！你昨天是不是又给她讲《诗经》了？！'],()=>say('郭芙蓉',['二丫姐姐，诗是讲给有缘人听的——他先看我的。'],()=>say(LN,['二位姑娘息怒！子曰：君子和而不同……约！',KT('站到两人中间，时机对了按 J 子曰 劝架。挨打会掉血。','站到两人中间，时机对了点「子曰」劝架。挨打会掉血。')],()=>note('劝架开始！'))));},
+ obj(){return '子曰劝架 '+LSTATE.calm+'/'+LSTATE.need+' · 别站枪口'},
+ upd(){const ya=LSTATE.ya,fu=LSTATE.fu;if(!ya||!fu)return;if(LSTATE.cd>0)LSTATE.cd--;
+  // girls rush toward each other
+  const mid=15*T;for(const g of [ya,fu]){const tx=mid+g.side*-40,dx=tx-g.x,dy=(9*T+Math.sin(tick/20+g.side)*20)-g.y;const d=Math.hypot(dx,dy)||1;g.ang=Math.atan2(dy,dx);if(LSTATE.frozen){g.stun=(g.stun||0);continue;}
+   if(!(g.stun>0)){g.x+=dx/d*1.4;g.y+=dy/d*1.4;}else g.stun--;}
+  const clash=Math.hypot(ya.x-fu.x,ya.y-fu.y)<50;
+  LSTATE.clash=clash;if(clash&&LSTATE.cd<=0){// danger zone
+   const cx=(ya.x+fu.x)/2,cy=(ya.y+fu.y)/2;if(Math.hypot(P.x-cx,P.y-cy)<55&&P.inv<=0){hurtP(1,(P.x-cx)/40,(P.y-cy)/40);note('被剑气扫到了！');LSTATE.cd=40;}}
+  // auto clash particles
+  if(clash&&tick%12==0){for(let i=0;i<3;i++)parts.push({x:(ya.x+fu.x)/2,y:(ya.y+fu.y)/2,vx:Math.random()*4-2,vy:Math.random()*4-2,l:16,c:'#ffd24a'});}
+  if(LSTATE.calm>=LSTATE.need){LSTATE.frozen=1;say('柳二丫',['……哼。看在子曰的份上，今日放过她。'],()=>say('郭芙蓉',['我也不是那种蛮不讲理的人——最多再吵八回。'],()=>say(LN,['（瘫坐）子曰：和平……最贵。'],lWin)));LSTATE.calm=999;}
+  if(P.hp<=0)lLose('劝架劝成了夹心饼','二丫＆芙蓉：“让开！……咦他怎么躺下了？”');}};
+
+// 第十四回 断案
+const CLUES=['鸡毛在后院灶台旁','账本少了三文买鸡钱','更夫说三更有人咳嗽','灶台有半枚铜钱'];
+LLS[3]={init(){P.x=15*T;P.y=12*T;area='inn';LSTATE={asked:{},clue:0,accused:0};NPCS.inn=[{id:'liu',x:9,y:3},{id:'ya',x:14,y:10},{id:'qiao',x:20,y:3},{id:'zhou',x:25,y:14}];
+  // suspect markers as ents
+  [['liu','柳三娘'],['ya','柳二丫'],['qiao','乔不留'],['zhou','周铁头']].forEach(([id,nm],i)=>{});
+  say('柳三娘',['客栈的老母鸡没了！谁偷的？！','吕秀才，你不是关中大侠吗？断个案！'],()=>say(LN,['（推眼镜）子曰：听讼，吾犹人也。——约！',KT('E 谈 询问伙计，找齐线索再指认。','「谈」询问伙计，找齐线索再指认。'),'线索齐了，再找真凶对质。']));},
+ obj(){return LSTATE.clue<3?'询问伙计，收集线索 '+LSTATE.clue+'/3':'指认真凶（找可疑的人谈）'},
+ talkNpc(id){const A=LSTATE.asked;if(A[id]){note('已经问过了');return;}A[id]=1;
+  const lines={liu:['三更我在算账，听见后院扑棱一声。','灶台旁好像有鸡毛……你自己看去。'],
+   ya:['不是我！我昨晚练剑呢。对了，乔不留鬼鬼祟祟的。','……也可能是周大叔，他爱喝鸡汤。'],
+   qiao:['我？我偷东西从不偷鸡——鸡会叫。','不过我在后院捡到半枚铜钱，给你。'],
+   zhou:['咳咳……我半夜起来喝水，咳了两声。','鸡？我没看见鸡。真的。真的没看见。']};
+  const cues={liu:0,ya:-1,qiao:3,zhou:2}; // clue index or -1
+  say(CAST[id].name,lines[id],()=>{if(cues[id]>=0&&!(LSTATE.got||{})[cues[id]]){LSTATE.got=LSTATE.got||{};LSTATE.got[cues[id]]=1;LSTATE.clue++;sfx('coin');note('线索：'+CLUES[cues[id]]+'（'+LSTATE.clue+'/3）');}
+   if(LSTATE.clue>=3&&id=='zhou'){say(LN,['周兄，三更咳嗽、鸡毛、铜钱……都对上了。','偷鸡的人，就是你。'],null,[['就是周铁头！',()=>this.accuse(1)],['再想想……',()=>note('再转转问问')]]);}});},
+ accuse(ok){if(ok){say('周铁头',['……行，我承认。鸡汤实在香。','我赔三娘一只，再外加……帮工三天。'],()=>say('柳三娘',['算你识相。吕秀才，这案断得漂亮！'],()=>say(LN,['子曰：知之为知之。——约！'],lWin)));}
+  else{sfx('bad');say(LN,['……好像指错了。'],()=>lLose('指错了人','三娘：“关中大侠的眼睛，是装饰的吗？”'));}},
+ upd(){if(hit('KeyE')&&!dlg){let best=null,bd=99;for(const n of NPCS.inn){const d=Math.hypot(n.x*T+16-P.x,n.y*T+16-P.y);if(d<50&&d<bd){bd=d;best=n;}}
+  if(best){if(LSTATE.clue>=3&&best.id!='zhou'&&LSTATE.asked[best.id]){say(LN,['莫非是'+CAST[best.id].name+'？'],null,[['就是此人！',()=>this.accuse(0)],['再想想',()=>{}]]);}else this.talkNpc(best.id);}}}};
+
+// 第十五回 联合乔不留
+LLS[4]={init(){P.x=10*T;P.y=14*T;area='street';LSTATE={hits:0,need:5,zuib:0,qcd:0};NPCS.street=[{id:'qiao',x:20,y:14}];
+  const b={t:'bully',nm:'恶霸·赵横',x:15*T,y:7*T,r:16,hp:20,max:20,area,isBoss:1,ang:Math.PI/2,st:0,cd:80,aggro:null};ents.push(b);LSTATE.boss=b;
+  ents.push({t:'qiao',nm:'乔不留',x:22*T,y:14*T,r:11,hp:1,max:1,area,ally:1,noHit:1,ang:0});
+  say('恶霸·赵横',['听说关中大侠在这？让我见识见识！'],()=>{
+    say(LN,['赵横？你催粮欺市，今日该了。',KT('Q 嘴遁拖住恶霸，乔不留会上前点穴。需成功5次。','「嘴遁」拖住恶霸，乔不留会上前点穴。需成功5次。')],()=>{
+      say('乔不留',['你废话拖住他，我去点穴。就等你一声子曰。'],()=>note('开战！'));});});},
+ obj(){const b=LSTATE.boss;return b&&b.ko?'恶霸倒下了':'嘴遁拖住 · 点穴 '+LSTATE.hits+'/'+LSTATE.need},
+ upd(){const b=LSTATE.boss;if(!b||b.ko)return;if(LSTATE.qcd>0)LSTATE.qcd--;
+  if(LSTATE.zuib>0){LSTATE.zuib--;LSTATE.zuibOn=1;if(tick%40==0)floats.push({x:P.x,y:P.y,s:['子曰：君子……','听我说完！','有朋自远方来！'][(Math.random()*3)|0],l:50});}
+  else LSTATE.zuibOn=0;
+  if(b.stun>0){b.stun--;}
+  else{
+   const tgt=LSTATE.zuibOn?P:(ents.find(e=>e.ally)||P);const dx=tgt.x-b.x,dy=tgt.y-b.y,d=Math.hypot(dx,dy)||1;b.ang=Math.atan2(dy,dx);
+   if(b.st==0){if(d>55)lMove(b,dx/d*1.15,dy/d*1.15,b.r);if(--b.cd<=0){if(Math.random()<.55){b.st=1;b.ch=28;b.cdx=dx/d;b.cdy=dy/d;}else{b.st=3;b.ch=20;}}}
+   else if(b.st==1){if(--b.ch<=0){b.st=2;b.ch=22;sfx('dash');}}
+   else if(b.st==2){lMove(b,b.cdx*5.5,b.cdy*5.5,b.r);if(--b.ch<=0){b.st=0;b.cd=LSTATE.zuibOn?110:70;}}
+   else if(b.st==3){if(--b.ch<=0){for(let i=-1;i<=1;i++){const a=b.ang+i*.3;PJ.push({x:b.x,y:b.y,vx:Math.cos(a)*3.2,vy:Math.sin(a)*3.2,l:90});}sfx('hit');b.st=0;b.cd=90;}}
+   if(d<b.r+14&&!(b.hurt>0)&&!LSTATE.zuibOn)hurtP(b.st==2?2:1,dx/d,dy/d);
+   if(LSTATE.zuibOn&&d<b.r+14&&tgt===P&&P.inv<=0&&tick%30==0){P.kx=dx/d*2;P.ky=dy/d*2;}
+  }
+  for(const p of PJ){p.x+=p.vx;p.y+=p.vy;p.l--;if(Math.hypot(p.x-P.x,p.y-P.y)<15&&P.jz<.5){p.l=0;hurtP(1,p.vx/3,p.vy/3);}}PJ=PJ.filter(p=>p.l>0);
+  const q=ents.find(e=>e.ally);
+  if(q){const qx=b.x-Math.cos(b.ang)*45,qy=b.y-Math.sin(b.ang)*45;const dqx=qx-q.x,dqy=qy-q.y,dq=Math.hypot(dqx,dqy)||1;q.ang=Math.atan2(b.y-q.y,b.x-q.x);
+   if(LSTATE.zuibOn){lMove(q,dqx/dq*2.2,dqy/dq*2.2,q.r);
+    if(LSTATE.qcd<=0&&Math.hypot(q.x-b.x,q.y-b.y)<52){LSTATE.qcd=70;LSTATE.hits++;b.stun=55;b.hp-=3;b.hurt=12;sfx('hit');HS=4;TRA=.35;fxQ.push({x:b.x,y:b.y,l:12,s:1.2});floats.push({x:b.x,y:b.y,s:'葵花点穴手！',l:55});note('点穴成功 '+LSTATE.hits+'/'+LSTATE.need);
+     if(LSTATE.hits>=LSTATE.need){b.ko=1;b.hp=0;PJ=[];say('恶霸·赵横',['你这书生……废话比拳头还硬……'],()=>{say('乔不留',['配合不错。'],()=>{say(LN,['子曰：有难同当。此话，同难客栈当真。'],lWin);});});}}
+   }else{lMove(q,(P.x+80-q.x)*.04,(P.y-q.y)*.04,q.r);}
+  }
+  if(P.hp<=0)lLose('被恶霸掀翻','赵横：关中大侠？先学会闭嘴吧！');}};
+
+function lUpdate(){tick++;if(toastT>0)toastT--;if(LKT>0)LKT--;for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.l--;}parts=parts.filter(p=>p.l>0);for(const f of floats){f.y-=.6;f.l--;}floats=floats.filter(f=>f.l>0);
+ if(mode=='over'){if(hit('Enter')||hit('Space')||hit('KeyR')||hit('KeyE'))lStart(LV);return;}
+ if(mode=='lrecap'){if(hit('Enter')||hit('Space')||hit('KeyE')){if(LV<4)lStart(LV+1);else{mode='lend';sfx('stage');}}return;}
+ if(mode=='lend'){if(hit('Enter')||hit('Space')||hit('KeyE')){mode='lsel';LSEL=4;}return;}
+ if(dlg){if(hit('KeyE')||hit('Space')||hit('Enter')||hit('KeyJ')){if(!(dlg.choices&&dlg.i==dlg.lines.length-1)){dlg.i++;sfx('talk');if(dlg.i>=dlg.lines.length){const a=dlg.after;dlg=null;a&&a();}}}
+  if(dlg&&dlg.choices&&dlg.i==dlg.lines.length-1){for(let c=0;c<dlg.choices.length;c++)if(hit('Digit'+(c+1))){const f=dlg.choices[c][1],a=dlg.after;dlg=null;f();a&&a();break;}}
+  // touch choice: use #ch buttons if present — also allow tap via existing choose UI
+  return;}
+ if(CUT){CUT.t++;CUT.f(CUT.t);return;}
+ const L=LLS[LV];
+ if(!(L.noJoy)){
+  let dx=(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),dy=(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
+  if(dx||dy){const l=Math.hypot(dx,dy);dx/=l;dy/=l;P.dir={x:dx,y:dy};}
+  if(P.dcd>0)P.dcd--;if((hit('KeyK')||hit('ShiftLeft'))&&P.dcd<=0){P.dash=9;P.dcd=36;sfx('dash');}
+  let sp=2.6;if(P.dash>0){P.dash--;sp=7.2;dx=P.dir.x;dy=P.dir.y;parts.push({x:P.x,y:P.y+8,vx:0,vy:0,l:12,c:'#cde'});}
+  if(P.stun>0){P.stun--;sp=0;}lMove(P,dx*sp+P.kx,dy*sp+P.ky,10);P.kx*=.8;P.ky*=.8;
+  if(P.cd>0)P.cd--;if(P.inv>0)P.inv--;if(P.swing>0)P.swing--;
+  // 子曰
+  if((hit('KeyJ')||hit('Space'))&&P.cd<=0&&P.stun<=0){P.cd=28;P.swing=12;shoutZiYue();sfx('slash');
+   if(LV==0){// push thugs
+    for(const e of ents){if(!e.thug||e.hp<=0)continue;const vx=e.x-P.x,vy=e.y-P.y,d=Math.hypot(vx,vy);if(d<70){const dot=(vx*P.dir.x+vy*P.dir.y)/(d||1);if(dot>.2||d<36){e.stun=50;e.kx=vx/(d||1)*8;e.ky=vy/(d||1)*8;e.hp-=1;e.hurt=18;floats.push({x:e.x,y:e.y,s:'定！',l:40});fxQ.push({x:e.x,y:e.y,l:8,s:.7});}}}}
+   if(LV==2){const ya=LSTATE.ya,fu=LSTATE.fu;if(ya&&fu){const cx=(ya.x+fu.x)/2,cy=(ya.y+fu.y)/2;const near=Math.hypot(P.x-cx,P.y-cy)<70;const between=Math.min(P.x,ya.x,fu.x)!=P.x&&Math.max(P.x,ya.x,fu.x)!=P.x||Math.hypot(P.x-cx,P.y-cy)<55;
+    if(near&&(LSTATE.clash||between)){LSTATE.calm++;ya.stun=90;fu.stun=90;sfx('coin');HS=3;TRA=.25;floats.push({x:cx,y:cy,s:'子曰劝和！',l:55});note('劝住了 '+LSTATE.calm+'/'+LSTATE.need);}else note('站到中间、趁她们打在一处再子曰！');}}
+   if(LV==4){/* shout helps extend zuib slightly */ if(LSTATE.zuib>0)LSTATE.zuib=Math.min(200,LSTATE.zuib+25);}}
+  // 书 projectile
+  if(hit('KeyL')&&P.cd<=0){P.cd=22;P.swing=10;sfx('dish');LSTATE.papers=LSTATE.papers||[];LSTATE.papers.push({x:P.x,y:P.y,vx:P.dir.x*5.5,vy:P.dir.y*5.5,l:40});}
+  // 嘴遁
+  if(hit('KeyQ')){if(LV==4){if(LSTATE.zuib<=0){LSTATE.zuib=160;shoutZiYue();note('嘴遁展开——拖住他！');sfx('stage');}else note('还在嘴遁中……');}else{shoutZiYue();note('子曰！——这儿用不着长篇大论');}}}
+ // apply knock on thugs
+ for(const e of ents){if(e.kx){lMove(e,e.kx,e.ky||0,e.r);e.kx*=.8;e.ky*=.8;}}
+ if(mode=='play')L.upd();
+ if(P.hp<=0&&mode!='over')lLose('气血耗尽','吕秀才：“子曰：留得青山在……”');}
+
+window.__lv={get LV(){return LV},get LSTATE(){return LSTATE},get CH(){return CH},get mode(){return mode},set mode(v){mode=v},lStart,lUnl,lSetUnl,LLS,get LS(){return LLS},get ZiYueT(){return ZiYueT},get VOX(){return !!LVOXB},shoutZiYue};
+</script>
+</body></html>
