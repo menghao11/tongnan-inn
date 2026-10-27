@@ -5268,12 +5268,44 @@ if(need)for(const id of IDS){CH[id]={parts:[]};
  MiniGLB.load('assets/chars/'+id+'.glb').then(L=>{CH[id].parts=L;tick();}).catch(e=>{fail++;console.warn('chr glb',id,e.message);tick();});
  for(const k of ['','_face','_pal','_hair'])MiniGLB.tex('assets/chars/'+id+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;CH[id]['t'+k]=t;tick();}).catch(e=>{fail++;console.warn('chr tex',id+k);tick();});}
 else setTimeout(finish,0);
-need=need?IDS.length*5+3:0;
+need=need?IDS.length*5+4:0;
 // hy3d: Hunyuan3D-built 白展堂 (qiao) replaces the stylised hull; old qiao files stay as fallback
 const HY={};window.__hy=HY;
-if(need){MiniGLB.load('assets/chars/qiao_hy.glb').then(L=>{HY.parts=L;tick();}).catch(e=>{console.warn('hy glb',e.message);tick();});
+if(need){fetch('assets/chars/qiao_hy_rig.glb').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(ab=>{try{HY.rig=hyParse(ab);}catch(e){console.warn('hy rig parse',e.message);}tick();}).catch(e=>{console.warn('hy rig',e.message);tick();});
+ MiniGLB.load('assets/chars/qiao_hy.glb').then(L=>{HY.parts=L;tick();}).catch(e=>{console.warn('hy glb',e.message);tick();});
  for(const k of ['head','body'])MiniGLB.tex('assets/chars/qiao_hy_'+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;HY[k]=t;tick();}).catch(e=>{console.warn('hy tex',k);tick();});}
-function hyUp(f,u){if(!HY.parts||!HY.parts.length||!HY.head||!HY.body)return false;
+// ---- skinned GLB for qiao_hy: minimal glTF skin+animation parser, CPU skinning and a small clip mixer
+// (the bundled three.js build has no SkinnedMesh/AnimationMixer, so this does the same job by hand)
+const _g0=new THREE.Group(),HQ=_g0.quaternion.constructor,HM=_g0.matrix.constructor,HBG=Object.getPrototypeOf(THREE.BoxGeometry),HBA=(()=>{let c=new THREE.BoxGeometry().attributes.position.constructor;while(Object.getPrototypeOf(c).name&&Object.getPrototypeOf(c).name!='')c=Object.getPrototypeOf(c);return c;})();
+function hyParse(ab){const dv=new DataView(ab);let off=12,json=null,bin=null;
+ while(off<dv.byteLength){const len=dv.getUint32(off,true),typ=dv.getUint32(off+4,true),st=off+8;if(typ==0x4E4F534A)json=JSON.parse(new TextDecoder().decode(new Uint8Array(ab,st,len)));else if(typ==0x004E4942)bin=ab.slice(st,st+len);off=st+len;}
+ const CT={5126:Float32Array,5123:Uint16Array,5125:Uint32Array,5121:Uint8Array},NC={SCALAR:1,VEC2:2,VEC3:3,VEC4:4,MAT4:16};
+ const acc=i=>{const a=json.accessors[i],bv=json.bufferViews[a.bufferView],C=CT[a.componentType],n=NC[a.type],bo=(bv.byteOffset||0)+(a.byteOffset||0);let o=new C(bin.slice(bo,bo+a.count*n*C.BYTES_PER_ELEMENT));if(a.normalized&&C!==Float32Array){const m=C===Uint8Array?255:65535,f=new Float32Array(o.length);for(let k=0;k<o.length;k++)f[k]=o[k]/m;o=f;}return {a:o,n};};
+ const N=json.nodes.map(nd=>({name:nd.name,t:nd.translation||[0,0,0],r:nd.rotation||[0,0,0,1],s:nd.scale||[1,1,1],ch:nd.children||[],p:-1}));N.forEach((nd,i)=>nd.ch.forEach(c=>N[c].p=i));
+ const sk=json.skins[0],ibm=acc(sk.inverseBindMatrices).a,joints=sk.joints;
+ const prims=[];json.nodes.forEach(nd=>{if(nd.mesh==null)return;json.meshes[nd.mesh].primitives.forEach(p=>{const A=p.attributes;prims.push({mat:json.materials[p.material].name,pos:acc(A.POSITION).a,nor:acc(A.NORMAL).a,uv:acc(A.TEXCOORD_0).a,j:acc(A.JOINTS_0).a,w:acc(A.WEIGHTS_0).a,idx:acc(p.indices).a});});});
+ const clips={};(json.animations||[]).forEach(an=>{let t0=1e9,t1=0;const ch=an.channels.map(c=>{const sm=an.samplers[c.sampler],ti=acc(sm.input).a,vo=acc(sm.output);t0=Math.min(t0,ti[0]);t1=Math.max(t1,ti[ti.length-1]);return {node:c.target.node,path:c.target.path,ti,v:vo.a,n:vo.n,step:sm.interpolation=='STEP'};});clips[an.name]={ch,t0,dur:t1-t0};});
+ return {N,ibm,joints,prims,clips};}
+function hySample(R,clip,t,out){const c=R.clips[clip];if(!c)return;t=c.t0+t;for(const h of c.ch){if(h.path=='scale')continue;const ti=h.ti,L=ti.length;let i=0;while(i<L-1&&ti[i+1]<=t)i++;const j=Math.min(i+1,L-1),k=(h.step||j==i)?0:Math.min(1,Math.max(0,(t-ti[i])/(ti[j]-ti[i]))),n=h.n,o=out[h.node]||(out[h.node]={});
+  if(h.path=='rotation'){const q=new HQ().fromArray(h.v,i*n),q2=new HQ().fromArray(h.v,j*n);o.r=q.slerp(q2,k);}else{const a=new THREE.Vector3().fromArray(h.v,i*n),b=new THREE.Vector3().fromArray(h.v,j*n);o.t=a.lerp(b,k);}}}
+function hyPose(R,layers){// layers: [[clip,time,weight],...] blended in order
+ const loc=R.N.map(nd=>({t:new THREE.Vector3().fromArray(nd.t),r:new HQ().fromArray(nd.r)}));let first=true;
+ for(const [cl,t,w] of layers){if(w<=0.001)continue;const o={};hySample(R,cl,t,o);for(const k in o){const L=loc[k],v=o[k];if(first||w>=.999){if(v.t)L.t.copy(v.t);if(v.r)L.r.copy(v.r);}else{if(v.t)L.t.lerp(v.t,w);if(v.r)L.r.slerp(v.r,w);}}first=false;}
+ const W=new Array(R.N.length),one=new THREE.Vector3(1,1,1);const world=i=>{if(W[i])return W[i];const m=new HM().compose(loc[i].t,loc[i].r,one);W[i]=R.N[i].p>=0?world(R.N[i].p).clone().multiply(m):m;return W[i];};
+ return R.joints.map((jn,ji)=>world(jn).clone().multiply(new HM().fromArray(R.ibm,ji*16)));}
+function hySkin(inst,Ms){const E=Ms.map(m=>m.elements);for(const P of inst.parts){const s=P.src,pos=s.pos,nor=s.nor,J=s.j,Wt=s.w,op=P.geo.attributes.position.array,on=P.geo.attributes.normal.array,n=pos.length/3;
+  for(let v=0;v<n;v++){const x=pos[v*3],y=pos[v*3+1],z=pos[v*3+2],nx=nor[v*3],ny=nor[v*3+1],nz=nor[v*3+2];let px=0,py=0,pz=0,qx=0,qy=0,qz=0;
+   for(let k=0;k<4;k++){const w=Wt[v*4+k];if(w<=0)continue;const e=E[J[v*4+k]];px+=w*(e[0]*x+e[4]*y+e[8]*z+e[12]);py+=w*(e[1]*x+e[5]*y+e[9]*z+e[13]);pz+=w*(e[2]*x+e[6]*y+e[10]*z+e[14]);qx+=w*(e[0]*nx+e[4]*ny+e[8]*nz);qy+=w*(e[1]*nx+e[5]*ny+e[9]*nz);qz+=w*(e[2]*nx+e[6]*ny+e[10]*nz);}
+   op[v*3]=px;op[v*3+1]=py;op[v*3+2]=pz;const l=Math.hypot(qx,qy,qz)||1;on[v*3]=qx/l;on[v*3+1]=qy/l;on[v*3+2]=qz/l;}
+  P.geo.attributes.position.needsUpdate=true;P.geo.attributes.normal.needsUpdate=true;P.geo.computeBoundingSphere();}}
+function hyRigUp(f,u){const R=HY.rig;if(!R||!R.prims.length||!HY.head||!HY.body||!R.clips.walk||!R.clips.idle)return false;
+ if(!HY.M){const mk=t=>new THREE.MeshStandardMaterial({map:t,roughness:.85,metalness:0,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:.18});HY.M={head:mk(HY.head),body:mk(HY.body)};}
+ u.b.traverse(o=>{if(o.isMesh)o.visible=false;});const g=new THREE.Group(),inner=new THREE.Group();g.add(inner);let hz=1.75;const inst={parts:[],cur:'idle',t:0,prev:null,pt:0,fade:1};
+ for(const p of R.prims){const k=p.mat.indexOf('head')>=0?'head':'body';const geo=new HBG();geo.setAttribute('position',new HBA(new Float32Array(p.pos),3));geo.setAttribute('normal',new HBA(new Float32Array(p.nor),3));geo.setAttribute('uv',new HBA(p.uv,2));geo.setIndex(new HBA(p.idx,1));geo.computeBoundingBox();
+  const m=new THREE.Mesh(geo,HY.M[k]);m.castShadow=true;m.receiveShadow=true;m.frustumCulled=false;inner.add(m);inst.parts.push({geo,src:p});if(k=='head'){const bb=geo.boundingBox;hz=bb.min.y+(bb.max.y-bb.min.y)*.55;}}
+ const s=f.scale.x||1;g.scale.setScalar(1/s);u.b.add(g);u.hull=g;u.hyIn=inner;u.hz=hz;u.hy=1;u.rig=inst;hySkin(inst,hyPose(R,[['idle',0,1]]));return true;}
+window.__hyRig=()=>HY.rig&&Object.fromEntries(Object.entries(HY.rig.clips).map(([k,c])=>[k,c.dur]));
+function hyUp(f,u){if(hyRigUp(f,u))return true;if(!HY.parts||!HY.parts.length||!HY.head||!HY.body)return false;
  if(!HY.M){const mk=t=>new THREE.MeshStandardMaterial({map:t,roughness:.85,metalness:0,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:.18});HY.M={head:mk(HY.head),body:mk(HY.body)};}
  u.b.traverse(o=>{if(o.isMesh)o.visible=false;});const g=new THREE.Group(),inner=new THREE.Group();g.add(inner);let hz=1.75;
  for(const p of HY.parts){const k=p.mat.indexOf('head')>=0?'head':'body';const m=new THREE.Mesh(p.geo,HY.M[k]);m.castShadow=true;m.receiveShadow=true;inner.add(m);
@@ -5294,7 +5326,20 @@ function finish(){if(finish.d)return;finish.d=1;
 // animate hull sway when walking
 if(typeof animFig=='function'){const _a=animFig;animFig=function(f,x,z,fx,fz,dt){_a(f,x,z,fx,fz,dt);const u=f.userData;if(u.hull&&u.hy){hyAnim(f,u);}else if(u.hull){u.hull.rotation.z=Math.sin(u.ph)*.045*u.wk;u.hull.rotation.x=.04*u.wk;}};}
 // procedural motion for the rigid hy3d figure: walk bob/sway/lean, idle breathing, 点穴 thrust lunge
-function hyAnim(f,u){const t=performance.now()/1000,wk=u.wk||0,ph=u.ph||0,I=u.hyIn;
+function hyAnim(f,u){if(u.rig)return hyRigAnim(f,u);hyAnim0(f,u);}
+window.__hyRA=(f,u)=>hyRigAnim(f,u);
+function hyRigAnim(f,u){const R=HY.rig,I=u.rig,now=performance.now()/1000,dt=Math.min(.1,I.last?now-I.last:0);I.last=now;
+ const wk=Math.min(1,u.wk||0),isHero=(typeof heroF!='undefined'&&f===heroF&&typeof P!='undefined');
+ let act=null,at=0;
+ if(isHero&&P.lunge>0){act='dian';at=Math.min(1,(16-P.lunge)/16)*R.clips.dian.dur;}
+ else if(isHero&&P.stun>0){act='hit';at=R.clips.hit.dur*.5;}
+ I.af=act?Math.min(1,(I.af||0)+dt*10):Math.max(0,(I.af||0)-dt*6);if(act)I.act=act,I.at=at;
+ const run=isHero&&P.dash>0,loop=run?'run':'walk',cd=R.clips[loop].dur,ph=((u.ph||0)/(Math.PI*2))%1;
+ I.it=((I.it||0)+dt)%R.clips.idle.dur;
+ const L=[['idle',I.it,1],[loop,ph*cd,wk]];if(I.af>0&&I.act)L.push([I.act,I.at,I.af]);
+ u.b.position.y=0;u.hull.rotation.set(0,0,0);u.hyIn.rotation.set(0,0,0);u.hyIn.position.set(0,0,0);
+ if(!f.visible&&!u.inP)return;hySkin(I,hyPose(R,L));I.state=I.af>.5?I.act:(wk>.5?loop:'idle');}
+function hyAnim0(f,u){const t=performance.now()/1000,wk=u.wk||0,ph=u.ph||0,I=u.hyIn;
  let lean=.07*wk,bob=Math.abs(Math.sin(ph))*.035*wk,roll=Math.sin(ph)*.05*wk,yaw=Math.sin(ph)*.06*wk;
  bob+=(1-wk)*Math.sin(t*1.7)*.006;roll+=(1-wk)*Math.sin(t*.9)*.012;
  if(typeof heroF!='undefined'&&f===heroF&&typeof P!='undefined'&&P.lunge>0){const k=P.lunge>=11?(16-P.lunge)/5:P.lunge>4?1:P.lunge/4;lean+=.28*k;I.position.z=.16*k;yaw+=.25*k;}else I.position.z=0;
