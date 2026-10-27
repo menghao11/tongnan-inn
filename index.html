@@ -3909,7 +3909,7 @@ const SAVE='tongnan_inn_v1';
 
 // 8-bit 背景小调（五声音阶，方波+三角波）
 let MUS=null,mstep=0;const MEL=[0,2,4,7,9,7,4,2, 0,4,7,12,9,7,4,0, 2,4,7,9,12,9,7,4, 9,7,4,2,4,2,0,-1],BAS=[0,0,7,7,5,5,7,7];
-function musTick(){try{if(!AC||AC.state!='running'||paused)return;const n=AC.currentTime+.02,st=mstep++,boss=mode=='play'&&ph=='boss',base=boss?196:262,tone=(f,ty,v,d)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.0008,n+d);o.connect(g).connect(AC.destination);o.start(n);o.stop(n+d+.02);};
+function musTick(){try{if(!AC||AC.state!='running'||paused||window.__bgmOn)return;const n=AC.currentTime+.02,st=mstep++,boss=mode=='play'&&ph=='boss',base=boss?196:262,tone=(f,ty,v,d)=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(v,n);g.gain.exponentialRampToValueAtTime(.0008,n+d);o.connect(g).connect(AC.destination);o.start(n);o.stop(n+d+.02);};
  const m=MEL[st%32];if(m>=0&&st%2==0){const f=base*Math.pow(2,m/12);tone(f,'triangle',.05,.6);tone(f*2,'sine',.015,.35);}
  if(st%4==0)tone(base/2*Math.pow(2,BAS[(st>>2)%8]/12),'sine',.05,.7);}catch(e){}}
 setInterval(musTick,140);
@@ -5268,12 +5268,14 @@ if(need)for(const id of IDS){CH[id]={parts:[]};
  MiniGLB.load('assets/chars/'+id+'.glb').then(L=>{CH[id].parts=L;tick();}).catch(e=>{fail++;console.warn('chr glb',id,e.message);tick();});
  for(const k of ['','_face','_pal','_hair'])MiniGLB.tex('assets/chars/'+id+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;CH[id]['t'+k]=t;tick();}).catch(e=>{fail++;console.warn('chr tex',id+k);tick();});}
 else setTimeout(finish,0);
-need=need?IDS.length*5+4:0;
+need=need?IDS.length*5+10:0;
 // hy3d: Hunyuan3D-built 白展堂 (qiao) replaces the stylised hull; old qiao files stay as fallback
-const HY={};window.__hy=HY;
+const HY={};window.__hy=HY;const HYS={qiao:HY,wen:{},ma:{}};window.__hys=HYS;
 if(need){fetch('assets/chars/qiao_hy_rig.glb').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(ab=>{try{HY.rig=hyParse(ab);}catch(e){console.warn('hy rig parse',e.message);}tick();}).catch(e=>{console.warn('hy rig',e.message);tick();});
  MiniGLB.load('assets/chars/qiao_hy.glb').then(L=>{HY.parts=L;tick();}).catch(e=>{console.warn('hy glb',e.message);tick();});
- for(const k of ['head','body'])MiniGLB.tex('assets/chars/qiao_hy_'+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;HY[k]=t;tick();}).catch(e=>{console.warn('hy tex',k);tick();});}
+ for(const k of ['head','body'])MiniGLB.tex('assets/chars/qiao_hy_'+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;HY[k]=t;tick();}).catch(e=>{console.warn('hy tex',k);tick();});
+ for(const id of ['wen','ma']){const H=HYS[id];fetch('assets/chars/'+id+'_hy_rig.glb').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(ab=>{try{H.rig=hyParse(ab);}catch(e){console.warn('hy rig parse',id,e.message);}tick();}).catch(e=>{console.warn('hy rig',id,e.message);tick();});
+  for(const k of ['head','body'])MiniGLB.tex('assets/chars/'+id+'_hy_'+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;H[k]=t;tick();}).catch(e=>{console.warn('hy tex',id,k);tick();});}}
 // ---- skinned GLB for qiao_hy: minimal glTF skin+animation parser, CPU skinning and a small clip mixer
 // (the bundled three.js build has no SkinnedMesh/AnimationMixer, so this does the same job by hand)
 const _g0=new THREE.Group(),HQ=_g0.quaternion.constructor,HM=_g0.matrix.constructor,HBG=Object.getPrototypeOf(THREE.BoxGeometry),HBA=(()=>{let c=new THREE.BoxGeometry().attributes.position.constructor;while(Object.getPrototypeOf(c).name&&Object.getPrototypeOf(c).name!='')c=Object.getPrototypeOf(c);return c;})();
@@ -5298,22 +5300,22 @@ function hySkin(inst,Ms){const E=Ms.map(m=>m.elements);for(const P of inst.parts
    for(let k=0;k<4;k++){const w=Wt[v*4+k];if(w<=0)continue;const e=E[J[v*4+k]];px+=w*(e[0]*x+e[4]*y+e[8]*z+e[12]);py+=w*(e[1]*x+e[5]*y+e[9]*z+e[13]);pz+=w*(e[2]*x+e[6]*y+e[10]*z+e[14]);qx+=w*(e[0]*nx+e[4]*ny+e[8]*nz);qy+=w*(e[1]*nx+e[5]*ny+e[9]*nz);qz+=w*(e[2]*nx+e[6]*ny+e[10]*nz);}
    op[v*3]=px;op[v*3+1]=py;op[v*3+2]=pz;const l=Math.hypot(qx,qy,qz)||1;on[v*3]=qx/l;on[v*3+1]=qy/l;on[v*3+2]=qz/l;}
   P.geo.attributes.position.needsUpdate=true;P.geo.attributes.normal.needsUpdate=true;P.geo.computeBoundingSphere();}}
-function hyRigUp(f,u){const R=HY.rig;if(!R||!R.prims.length||!HY.head||!HY.body||!R.clips.walk||!R.clips.idle)return false;
- if(!HY.M){const mk=t=>new THREE.MeshStandardMaterial({map:t,roughness:.85,metalness:0,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:.18});HY.M={head:mk(HY.head),body:mk(HY.body)};}
+function hyRigUp(f,u){const H=HYS[u.cid];if(!H)return false;const R=H.rig;if(!R||!R.prims.length||!H.head||!H.body||!R.clips.walk||!R.clips.idle)return false;
+ if(!H.M){const mk=t=>new THREE.MeshStandardMaterial({map:t,roughness:.85,metalness:0,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:.18});H.M={head:mk(H.head),body:mk(H.body)};}
  u.b.traverse(o=>{if(o.isMesh)o.visible=false;});const g=new THREE.Group(),inner=new THREE.Group();g.add(inner);let hz=1.75;const inst={parts:[],cur:'idle',t:0,prev:null,pt:0,fade:1};
  for(const p of R.prims){const k=p.mat.indexOf('head')>=0?'head':'body';const geo=new HBG();geo.setAttribute('position',new HBA(new Float32Array(p.pos),3));geo.setAttribute('normal',new HBA(new Float32Array(p.nor),3));geo.setAttribute('uv',new HBA(p.uv,2));geo.setIndex(new HBA(p.idx,1));geo.computeBoundingBox();
-  const m=new THREE.Mesh(geo,HY.M[k]);m.castShadow=true;m.receiveShadow=true;m.frustumCulled=false;inner.add(m);inst.parts.push({geo,src:p});if(k=='head'){const bb=geo.boundingBox;hz=bb.min.y+(bb.max.y-bb.min.y)*.55;}}
+  const m=new THREE.Mesh(geo,H.M[k]);m.castShadow=true;m.receiveShadow=true;m.frustumCulled=false;inner.add(m);inst.parts.push({geo,src:p});if(k=='head'){const bb=geo.boundingBox;hz=bb.min.y+(bb.max.y-bb.min.y)*.55;}}
  const s=f.scale.x||1;g.scale.setScalar(1/s);u.b.add(g);u.hull=g;u.hyIn=inner;u.hz=hz;u.hy=1;u.rig=inst;hySkin(inst,hyPose(R,[['idle',0,1]]));return true;}
-window.__hyRig=()=>HY.rig&&Object.fromEntries(Object.entries(HY.rig.clips).map(([k,c])=>[k,c.dur]));
-function hyUp(f,u){if(hyRigUp(f,u))return true;if(!HY.parts||!HY.parts.length||!HY.head||!HY.body)return false;
- if(!HY.M){const mk=t=>new THREE.MeshStandardMaterial({map:t,roughness:.85,metalness:0,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:.18});HY.M={head:mk(HY.head),body:mk(HY.body)};}
+window.__hyRig=(id)=>{const H=HYS[id||'qiao'];return H&&H.rig&&Object.fromEntries(Object.entries(H.rig.clips).map(([k,c])=>[k,c.dur]));};
+function hyUp(f,u){if(hyRigUp(f,u))return true;const H=HYS[u.cid];if(!H)return false;if(!H.parts||!H.parts.length||!H.head||!H.body)return false;
+ if(!H.M){const mk=t=>new THREE.MeshStandardMaterial({map:t,roughness:.85,metalness:0,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:.18});H.M={head:mk(H.head),body:mk(H.body)};}
  u.b.traverse(o=>{if(o.isMesh)o.visible=false;});const g=new THREE.Group(),inner=new THREE.Group();g.add(inner);let hz=1.75;
- for(const p of HY.parts){const k=p.mat.indexOf('head')>=0?'head':'body';const m=new THREE.Mesh(p.geo,HY.M[k]);m.castShadow=true;m.receiveShadow=true;inner.add(m);
+ for(const p of H.parts){const k=p.mat.indexOf('head')>=0?'head':'body';const m=new THREE.Mesh(p.geo,H.M[k]);m.castShadow=true;m.receiveShadow=true;inner.add(m);
   if(k=='head'){const bb=p.geo.boundingBox;hz=bb.min.y+(bb.max.y-bb.min.y)*.55;}}
  const s=f.scale.x||1;g.scale.setScalar(1/s);u.b.add(g);u.hull=g;u.hyIn=inner;u.hz=hz;u.hy=1;return true;}
 function mats(id){const c=CH[id];if(c.M)return c.M;const mk=(t,e)=>new THREE.MeshLambertMaterial({map:t,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:e,side:THREE.DoubleSide});
  c.M={chr:mk(c.t,.28),face:mk(c.t_face,.3),pal:mk(c.t_pal,.25),hair:mk(c.t_hair,.22)};c.M.hair.alphaTest=.45;c.M.face.side=THREE.FrontSide;return c.M;}
-function upgrade(f){const u=f.userData;if(!u||u.hull||!u.cid)return;if(u.cid=='qiao'&&hyUp(f,u))return;const c=CH[u.cid];if(!c||!c.parts.length||!c.t||!c.t_face||!c.t_pal||!c.t_hair)return;
+function upgrade(f){const u=f.userData;if(!u||u.hull||!u.cid)return;if(HYS[u.cid]&&hyUp(f,u))return;const c=CH[u.cid];if(!c||!c.parts.length||!c.t||!c.t_face||!c.t_pal||!c.t_hair)return;
  u.b.traverse(o=>{if(o.isMesh)o.visible=false;});const M=mats(u.cid),g=new THREE.Group();let hz=1.5;
  for(const p of c.parts){const k=p.mat.split('_')[0];const m=new THREE.Mesh(p.geo,M[k]||M.pal);if(k=='hair')m.renderOrder=2;m.castShadow=true;m.receiveShadow=k!='face';g.add(m);
   if(k=='face'){p.geo.computeBoundingBox();const bb=p.geo.boundingBox;hz=(bb.min.y+bb.max.y)/2;}}
@@ -5328,10 +5330,11 @@ if(typeof animFig=='function'){const _a=animFig;animFig=function(f,x,z,fx,fz,dt)
 // procedural motion for the rigid hy3d figure: walk bob/sway/lean, idle breathing, 点穴 thrust lunge
 function hyAnim(f,u){if(u.rig)return hyRigAnim(f,u);hyAnim0(f,u);}
 window.__hyRA=(f,u)=>hyRigAnim(f,u);
-function hyRigAnim(f,u){const R=HY.rig,I=u.rig,now=performance.now()/1000,dt=Math.min(.1,I.last?now-I.last:0);I.last=now;
+function hyRigAnim(f,u){const H=HYS[u.cid]||HY;const R=H.rig,I=u.rig,now=performance.now()/1000,dt=Math.min(.1,I.last?now-I.last:0);I.last=now;
  const wk=Math.min(1,u.wk||0),isHero=(typeof heroF!='undefined'&&f===heroF&&typeof P!='undefined');
  let act=null,at=0;
- if(isHero&&P.lunge>0){act='dian';at=Math.min(1,(16-P.lunge)/16)*R.clips.dian.dur;}
+ if(isHero&&P.swing>0&&u.cid!='qiao'){act=(u.cid=='wen'&&R.clips.talk)?'talk':'dian';at=Math.min(1,(12-P.swing)/12)*R.clips[act].dur;}
+ else if(isHero&&P.lunge>0&&R.clips.dian){act='dian';at=Math.min(1,(16-P.lunge)/16)*R.clips.dian.dur;}
  else if(isHero&&P.stun>0){act='hit';at=R.clips.hit.dur*.5;}
  I.af=act?Math.min(1,(I.af||0)+dt*10):Math.max(0,(I.af||0)-dt*6);if(act)I.act=act,I.at=at;
  const run=isHero&&P.dash>0,loop=run?'run':'walk',cd=R.clips[loop].dur,ph=((u.ph||0)/(Math.PI*2))%1;
@@ -5356,5 +5359,36 @@ if(typeof renderPortrait=='function'){const _r=renderPortrait;renderPortrait=fun
  GL.setScissorTest(true);GL.setScissor(x,vy,w,h);GL.setViewport(x,vy,w,h);GL.setClearColor('#d9c8a4',1);GL.clear();GL.render(pScene,pCam);GL.setScissorTest(false);GL.setClearColor('#000',1);pCam.fov=fv;pCam.updateProjectionMatrix();};}
 })();
 
+</script>
+<script>
+// ---- BGM: looping mp3s via Web Audio (gapless loop, crossfade main<->tense, duck under voice, mute toggle)
+(function(){const LEN={main:68.571,tense:30.0},URL={main:'assets/music/inn_main.mp3',tense:'assets/music/inn_tense.mp3'};
+const B={buf:{},src:{},g:{},cur:null,started:false,muted:false,duck:1,loading:{}};window.__bgm=B;
+try{B.muted=localStorage.getItem('inn_mute')=='1';}catch(e){}
+function ctx(){if(!AC){const C=window.AudioContext||window.webkitAudioContext;if(!C)return null;AC=new C();}return AC;}
+function load(k){if(B.buf[k]||B.loading[k])return B.loading[k]||Promise.resolve(B.buf[k]);
+ B.loading[k]=fetch(URL[k]).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer();}).then(ab=>new Promise((res,rej)=>AC.decodeAudioData(ab,res,rej))).then(b=>{B.buf[k]=b;return b;}).catch(e=>{console.warn('bgm',k,e&&e.message);B.loading[k]=null;});return B.loading[k];}
+function master(){if(!B.m){B.m=AC.createGain();B.m.gain.value=B.muted?0:1;B.d=AC.createGain();B.d.gain.value=1;B.m.connect(B.d).connect(AC.destination);}return B.m;}
+function play(k){const b=B.buf[k];if(!b||B.src[k])return;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;s.loop=true;s.loopStart=0;s.loopEnd=Math.min(LEN[k],b.duration);
+ g.gain.value=0;s.connect(g).connect(master());s.start();B.src[k]=s;B.g[k]=g;}
+const VOL={main:.42,tense:.46};
+function to(k){if(B.cur===k)return;if(!B.buf[k]){load(k);return;}play(k);const t=AC.currentTime;
+ for(const n in B.g){const g=B.g[n].gain;g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(n===k?VOL[n]:0,t+1.0);}B.cur=k;}
+function want(){try{if(typeof mode=='undefined')return 'main';const menu=['title','chap','dsel','lsel','cast','over','recap','dend','drecap','end','lend','lrecap'].includes(mode);if(menu)return 'main';
+ if(mode=='play'&&ph=='boss')return 'tense';if(typeof DS!='undefined'&&DS&&(DS.boss||DS.alarm||DS.stealth)&&typeof CH!='undefined'&&CH=='dao'&&mode!='dsel')return 'tense';
+ if(typeof LSTATE!='undefined'&&LSTATE&&LSTATE.boss&&CH=='lv')return 'tense';}catch(e){}return 'main';}
+function start(){if(B.started)return;const c=ctx();if(!c)return;if(c.state!='running')c.resume();B.started=true;
+ load('main').then(()=>{window.__bgmOn=true;master();to(want());setTimeout(()=>load('tense'),1500);});}
+for(const ev of ['pointerdown','touchend','keydown'])window.addEventListener(ev,()=>{start();if(AC&&AC.state!='running')AC.resume();},{passive:true});
+setInterval(()=>{if(!B.started||!AC||!B.buf.main)return;const w=want();if(w=='tense'&&!B.buf.tense){load('tense');return;}to(w);},300);
+B.duckFor=function(sec){if(!B.d||!AC)return;const t=AC.currentTime,g=B.d.gain;g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(.22,t+.12);g.setValueAtTime(.22,t+sec);g.linearRampToValueAtTime(1,t+sec+.6);};
+if(typeof dVoice=='function'){const _v=dVoice;dVoice=function(){_v();try{B.duckFor((typeof VOXB!='undefined'&&VOXB?VOXB.duration:1.5));}catch(e){}};}
+if(typeof playZiYue=='function'){const _z=playZiYue;playZiYue=function(){_z();try{B.duckFor((typeof LVOXB!='undefined'&&LVOXB?LVOXB.duration:1.5));}catch(e){}};}
+// mute toggle
+const bt=document.createElement('div');bt.id='bgmBtn';bt.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:max(6px,env(safe-area-inset-bottom));z-index:9000;width:34px;height:34px;border-radius:17px;background:rgba(30,20,12,.55);border:1px solid #b89a5e;color:#e8d8b8;font:18px serif;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;cursor:pointer';
+const lab=()=>{bt.textContent=B.muted?'🔇':'♪';};lab();
+bt.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();start();B.muted=!B.muted;try{localStorage.setItem('inn_mute',B.muted?'1':'0');}catch(_){}if(B.m&&AC){const t=AC.currentTime;B.m.gain.cancelScheduledValues(t);B.m.gain.setValueAtTime(B.m.gain.value,t);B.m.gain.linearRampToValueAtTime(B.muted?0:1,t+.2);}lab();});
+['touchstart','touchend','mousedown','click'].forEach(ev=>bt.addEventListener(ev,e=>e.stopPropagation()));
+document.body.appendChild(bt);})();
 </script>
 </body></html>
