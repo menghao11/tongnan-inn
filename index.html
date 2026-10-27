@@ -3883,12 +3883,16 @@ mk('street','葫芦镇·大街','.',m=>{rect(m,1,1,28,3,'H');for(let x=13;x<=16;
 mk('yard','同难客栈·后院','.',m=>{rect(m,1,1,12,3,'H');rect(m,15,1,28,3,'H');rect(m,1,14,9,18,'H');rect(m,14,9,15,10,'X');m[13][22]='T';},{E:[8,11,'inn',1,null]},['#7a6a54','#6e604c']);
 mk('hill','后山',',',m=>{for(let i=0;i<60;i++){const x=2+((i*37)%26),y=2+((i*53)%16);if(!(y>=8&&y<=11)&&!(x>=13&&x<=16))m[y][x]='T';}},{W:[8,11,'street',COLS-2,null]},['#4c6b35','#42602e']);
 const CAST={
- qiao:{name:'乔不留',role:'跑堂',col:'#3a6ea8',quirk:'金盆洗手的神偷，见钱袋就手痒'},
- liu:{name:'柳三娘',role:'掌柜',col:'#d22',quirk:'寡居掌柜，抠门心软，算盘不离手'},
- wen:{name:'温如玉',role:'账房',col:'#3b8a5a',quirk:'胆小秀才，一紧张就背错书'},
- ya:{name:'柳二丫',role:'掌柜之女',col:'#d86fb0',quirk:'脾气火爆，一言不合就拔剑'},
+ qiao:{name:'白展堂',role:'跑堂',col:'#3a6ea8',quirk:'金盆洗手的盗圣，葵花点穴手'},
+ liu:{name:'佟掌柜',role:'掌柜',col:'#d22',quirk:'抠门心软，额滴神啊'},
+ wen:{name:'吕秀才',role:'账房',col:'#3b8a5a',quirk:'子曰不离口，胆小爱讲理'},
+ ya:{name:'郭芙蓉',role:'杂役',col:'#2f9a68',quirk:'排山倒海，一言不合就出手'},
  ma:{name:'李大嘴',role:'大厨',col:'#eee',quirk:'嘴大手笨，常把盐当糖'},
- zhou:{name:'周铁头',role:'捕快',col:'#444',quirk:'胡子比胆子大，遇事先叫人'}};
+ zhou:{name:'邢育森',role:'捕头',col:'#444',quirk:'遇事先喊“我叫人了啊”'},
+ beggar:{name:'小米',role:'丐帮',col:'#6a5a3e',quirk:'消息灵通，见吃就来'},
+ lady:{name:'祝无双',role:'师妹',col:'#c84a44',quirk:'勤快温柔，手脚麻利'},
+ mei:{name:'莫小贝',role:'掌门',col:'#c0282a',quirk:'衡山派小掌门，爱吃糖葫芦'},
+ yan:{name:'燕小六',role:'捕快',col:'#c4783a',quirk:'“帮我照顾好我七舅姥爷”'}};
 let NPCS={inn:[],street:[],hill:[],yard:[]};
 function setNPC(){NPCS={inn:[{id:'liu',x:9,y:3},{id:'wen',x:25,y:3},{id:'qiao',x:20,y:3},{id:'ya',x:14,y:10}],street:[{id:'zhou',x:8,y:9}],hill:[],yard:[]};
  if(EP==0&&(ph=='serve'||ph=='serve0')||EP==1&&(ph=='clue'||ph=='accuse'))TB.forEach(([x,y],i)=>NPCS.inn.push({id:'g'+i,x:x+(i%2?1:0),y:y-1,name:EP==1?['书生客','卖艺的','老大娘','胖客人'][i]:(i+1)+'号桌客人',col:['#865','#568','#a63','#777'][i]}));
@@ -3920,34 +3924,34 @@ function solid(px,py){return '#THKX'.includes(tileAt(px,py));}
 function canMove(x,y,r){return !solid(x-r,y-r)&&!solid(x+r,y-r)&&!solid(x-r,y+r)&&!solid(x+r,y+r);}
 function move(o,dx,dy,r){if(canMove(o.x+dx,o.y,r))o.x+=dx;if(canMove(o.x,o.y+dy,r))o.y+=dy;}
 const EPS=[
- {t:'第一回 · 开张不吉',gag:'三娘：“盘子没碎一个，人倒躺了三个——今天赚了！”',moral:'同难客栈的规矩：活儿一起干，锅一起背。'},
- {t:'第二回 · 钱袋失踪',gag:'乔不留：“我早金盆洗手了。那盆……也被三娘卖了。”',moral:'被人怀疑时有人信你，这就叫“同难”。'},
- {t:'第三回 · 比武招亲',gag:'二丫：“招亲取消！本姑娘先招个能打的伙计。”',moral:'脾气再大，自家人拦得住；拦得住，才叫一家人。'},
+ {t:'第一回 · 开张不吉',gag:'掌柜：“盘子没碎一个，人倒躺了三个——今天赚了！”',moral:'同难客栈的规矩：活儿一起干，锅一起背。'},
+ {t:'第二回 · 钱袋失踪',gag:'白展堂：“我早金盆洗手了。那盆……也被掌柜卖了。”',moral:'被人怀疑时有人信你，这就叫“同难”。'},
+ {t:'第三回 · 比武招亲',gag:'芙蓉：“招亲取消！本姑娘先招个能打的伙计。”',moral:'脾气再大，自家人拦得住；拦得住，才叫一家人。'},
  {t:'第四回 · 大厨失味',gag:'李大嘴：“这回放的是糖！……吧？”',moral:'一个人尝不出味道，大伙儿替你尝。'},
- {t:'第五回 · 同难同当',gag:'三娘：“打坏的门板，记金万两账上！”',moral:'同甘容易共苦难，同难客栈，偏偏就共了这个苦。'}];
+ {t:'第五回 · 同难同当',gag:'掌柜：“打坏的门板，记金万两账上！”',moral:'同甘容易共苦难，同难客栈，偏偏就共了这个苦。'}];
 function startEP(n){EP=n;ents=[];items=[];carry=0;served=0;clues={};P.hp=P.max;P.inv=0;P.dash=0;dlg=null;mode='play';area='inn';P.x=15*T+16;P.y=15*T;save();
  const L=CAST.liu.name;
- if(n==0){ph='serve0';setNPC();say(L,['大嘴！今天同难客栈重新开张，跑堂乔不留去码头接货还没回来。','你炒完菜自己端！去后厨出菜口（柜台）端菜（E），送到亮着的号桌（E）。限时六十息，送错扣三文！','送对五道，赏你……口头表扬一次。'],()=>{ph='serve';timer=3600;order=1+Math.floor(Math.random()*4);});}
- if(n==1){ph='clue';setNPC();say('富商钱老爷',['我的钱袋！刚才还在腰上！','这店里谁手最快？——听说跑堂乔不留以前是神偷？'],()=>say(CAST.qiao.name,['大嘴兄弟，我真没拿！我金盆洗手好多年了！','三娘：“大嘴，我信不留。去问问各桌客人（E），问够三个，把真贼揪出来。”']));}
+ if(n==0){ph='serve0';setNPC();say(L,['大嘴！今天同难客栈重新开张，跑堂白展堂去码头接货还没回来。','你炒完菜自己端！去后厨出菜口（柜台）端菜（E），送到亮着的号桌（E）。限时六十息，送错扣三文！','送对五道，赏你……口头表扬一次。'],()=>{ph='serve';timer=3600;order=1+Math.floor(Math.random()*4);});}
+ if(n==1){ph='clue';setNPC();say('富商钱老爷',['我的钱袋！刚才还在腰上！','这店里谁手最快？——听说跑堂白展堂以前是神偷？'],()=>say(CAST.qiao.name,['大嘴兄弟，我真没拿！我金盆洗手好多年了！','掌柜：“大嘴，我信不留。去问问各桌客人（E），问够三个，把真贼揪出来。”']));}
  if(n==2){ph='duck';setNPC();say(CAST.ya.name,['我娘贴了“比武招亲”的告示，说是给店里招个免费护院。','结果黑鸭帮来了一群，说赢了就娶我，还要白吃白喝！','大嘴，出门跟他们讲讲道理——用你的大勺讲。'],()=>note('去大街打退黑鸭帮（大堂南门）'));}
  if(n==3){ph='herbs';setNPC();say(CAST.ma.name,['（咂嘴）完了完了，我舌头不灵了！今早的汤咸得掌柜哭了。','温账房翻书说，后山四味草药能治：甘草、山椒、薄荷、野蜂蜜。','厨子没了舌头，就像捕快没了胡子！我自己去采！'],()=>note('从大街往东去后山采药'));}
  if(n==4){ph='boss0';setNPC();say('金万两的管家',['奉“铁算盘”金万两老爷之命：此地要建“万两钱庄”。','今日就拆！'],()=>say(L,['……拆店？这店是我和死鬼当家的一砖一瓦攒的。','可真打起来，伤了你们怎么办？'],null,[['掌柜的，店在人在！',()=>finale0(true)],['要不……咱们先跑？',()=>finale0(false)]]));}}
-function finale0(brave){say('众人',brave?['二丫：“谁敢拆我家，先问我的剑！”','温如玉：“子曰：……打他！孔子没说过，我说的。”','乔不留：“我拿毛巾！”周铁头：“我这回不叫人，我就是人！”','三娘：“好！同难客栈，有难同当——出去！”']:['二丫：“跑？大嘴，你锅里还炖着汤呢，舍得跑？”','李大嘴：“……被你看穿了。我还想给大伙儿做饭呢。”','三娘：“同难客栈，难就同着扛。都出去！”'],()=>{ph='boss';setNPC();area='street';P.x=15*T;P.y=12*T;spawn([['boss',15,8],['goon',6,6],['goon',24,6],['goon',10,12]]);allyT=240;note('大伙儿一起守住客栈！');});}
+function finale0(brave){say('众人',brave?['芙蓉：“谁敢拆我家，先问我的剑！”','吕秀才：“子曰：……打他！孔子没说过，我说的。”','白展堂：“我拿毛巾！”邢育森：“我这回不叫人，我就是人！”','掌柜：“好！同难客栈，有难同当——出去！”']:['芙蓉：“跑？大嘴，你锅里还炖着汤呢，舍得跑？”','李大嘴：“……被你看穿了。我还想给大伙儿做饭呢。”','掌柜：“同难客栈，难就同着扛。都出去！”'],()=>{ph='boss';setNPC();area='street';P.x=15*T;P.y=12*T;spawn([['boss',15,8],['goon',6,6],['goon',24,6],['goon',10,12]]);allyT=240;note('大伙儿一起守住客栈！');});}
 function recap(){mode='recap';sfx('stage');try{if(EP<4)localStorage.setItem(SAVE,JSON.stringify({EP:EP+1,coins:P.coins,buns:P.buns}));else localStorage.removeItem(SAVE);}catch(e){}}
 function talk(n){const id=n.id,C=CAST[id],nm=C?C.name:n.name;
  if(EP==1&&ph=='clue'&&id[0]=='g'){const L=['“我一直在背书，眼睛没离开过书。……书拿反了？”','“钱袋？什么钱袋？我刚才翻跟头翻到钱老爷身边……纯属巧合。”','“那个卖艺的，跟头翻得比兔子还快，手也快。”','“我只看见菜，没看见人。”'][+id[1]];clues[id]=1;say(nm,[L],()=>{if(Object.keys(clues).length>=3&&ph=='clue'){ph='accuse';accuse();}});return;}
  if(EP==1&&ph=='accuse'){accuse();return;}
  if(id[0]=='g'){say(nm,['快上菜！我都饿成剪影了！']);return;}
- if(id=='ya'&&EP==2&&ph=='talk2'){say(nm,['哼！黑鸭帮打跑了，可那帮主说我凶，没人敢娶！','我就是凶！凶怎么了？'],null,[['凶才好，护得住客栈。',()=>say(nm,['……算你会说话。今天的桌子我不砍了。'],recap)],['二丫，桌子是无辜的。',()=>say(CAST.liu.name,['对！砍坏的三张桌子，记你账上！','二丫：“娘——！”'],recap)]]);return;}
- if(id=='wen'&&EP==3&&ph=='back'){say(nm,['药齐了？我照书熬好了，大嘴兄，喝！','李大嘴：（咕咚）……我尝出来了！是咸的！'],null,[['那今晚的汤放糖还是放盐？',()=>say(nm,['你……闭眼抓吧。我、我替大伙儿先尝。'],recap)],['以后我尝不准，你们帮我尝！',()=>say('乔不留',['好兄弟！咱们同难客栈，舌头也能借！'],recap)]]);return;}
- if(id=='zhou'&&EP==0&&ph=='talk0'){say(nm,['站住！谁在本捕快辖区打架？','……三个地痞自己躺下的？'],null,[['是我打的，记我头上。',()=>say(nm,['好汉做事好汉当。那我写个“见义勇为”。','三娘：“写好了拿来，能抵房钱吗？”'],recap)],['他们自己摔的，地太滑。',()=>say(nm,['嗯，地滑。那就记“地面不平，掌柜负责”。','三娘：“？？？”'],recap)]]);return;}
+ if(id=='ya'&&EP==2&&ph=='talk2'){say(nm,['哼！黑鸭帮打跑了，可那帮主说我凶，没人敢娶！','我就是凶！凶怎么了？'],null,[['凶才好，护得住客栈。',()=>say(nm,['……算你会说话。今天的桌子我不砍了。'],recap)],['芙蓉，桌子是无辜的。',()=>say(CAST.liu.name,['对！砍坏的三张桌子，记你账上！','芙蓉：“娘——！”'],recap)]]);return;}
+ if(id=='wen'&&EP==3&&ph=='back'){say(nm,['药齐了？我照书熬好了，大嘴兄，喝！','李大嘴：（咕咚）……我尝出来了！是咸的！'],null,[['那今晚的汤放糖还是放盐？',()=>say(nm,['你……闭眼抓吧。我、我替大伙儿先尝。'],recap)],['以后我尝不准，你们帮我尝！',()=>say('白展堂',['好兄弟！咱们同难客栈，舌头也能借！'],recap)]]);return;}
+ if(id=='zhou'&&EP==0&&ph=='talk0'){say(nm,['站住！谁在本捕快辖区打架？','……三个地痞自己躺下的？'],null,[['是我打的，记我头上。',()=>say(nm,['好汉做事好汉当。那我写个“见义勇为”。','掌柜：“写好了拿来，能抵房钱吗？”'],recap)],['他们自己摔的，地太滑。',()=>say(nm,['嗯，地滑。那就记“地面不平，掌柜负责”。','掌柜：“？？？”'],recap)]]);return;}
  const G={liu:['（噼里啪啦）这月你打碎碗两只，扣六文；帮我挡了一刀，加五文——你还欠我一文。'],
   wen:['子曰：“学而时习之，不亦……不亦饿乎？”……我一紧张就背串了。'],
   qiao:['大嘴，钱袋那回多亏你。……我手痒，不是想偷，是想帮人检查钱袋结不结实。'],
   ya:['谁说女子不如男？不服，先过我这把剑！'],
   zhou:['有事找我，没事也别找我——我胆小。']};
  say(nm,G[id]||['……']);}
-function accuse(){say('李大嘴',['（凭我的鼻子……那人身上有偷吃的葱油饼味）偷钱袋的是——'],null,[['卖艺的！',()=>{ph='chase';setNPC();note(KT('卖艺的跑了！去大街追（K 闪身）','卖艺的跑了！去大街追（点「闪」闪身）'));}],['书生客！',()=>{sfx('bad');say('书生客',['冤枉啊！我连自己的钱袋都找不着！'],()=>ph='accuse');}],['乔不留？',()=>{sfx('bad');say('乔不留',['大嘴！连你也不信我？再想想！'],()=>ph='accuse');}]]);}
+function accuse(){say('李大嘴',['（凭我的鼻子……那人身上有偷吃的葱油饼味）偷钱袋的是——'],null,[['卖艺的！',()=>{ph='chase';setNPC();note(KT('卖艺的跑了！去大街追（K 闪身）','卖艺的跑了！去大街追（点「闪」闪身）'));}],['书生客！',()=>{sfx('bad');say('书生客',['冤枉啊！我连自己的钱袋都找不着！'],()=>ph='accuse');}],['白展堂？',()=>{sfx('bad');say('白展堂',['大嘴！连你也不信我？再想想！'],()=>ph='accuse');}]]);}
 function update(){
  tick++;
  if(mode=='title'){if(hit('Enter')||hit('Space')){sfx('stage');mode='cast';}else if(hit('KeyC')&&hasSave())load();return;}
@@ -3982,7 +3986,7 @@ function update(){
    else{move(e,e.cdx*6.5,e.cdy*6.5,e.r);if(--e.ch<=0){e.st=0;e.cd=e.hp<20?70:110;if(e.hp<20&&ents.filter(q=>q.hp>0).length<4)ents.push(mkEnemy('goon',15*T,5*T));}}}
   else if(d<360)move(e,vx/d*e.sp,vy/d*e.sp,e.r);
   if(e.dmg&&d<e.r+11)hurtP(e.dmg,vx/d,vy/d);}
- if(ph=='boss'){if(--allyT<=0){allyT=200;const b=ents.find(e=>e.t=='boss'&&e.hp>0);if(b){const L=[['柳二丫','一剑！'],['乔不留','毛巾抽脸！'],['温如玉','子曰：看砖！'],['周铁头','我不叫人了！'],['柳三娘','算盘砸脸，不收钱！']];const [w,s]=L[(tick>>3)%5];b.hp-=2;b.hurt=10;sfx('hit');floats.push({x:b.x-40,y:b.y-50,s:w+'：'+s,l:80});if(b.hp<=0){b.hp=0;win();}}}}
+ if(ph=='boss'){if(--allyT<=0){allyT=200;const b=ents.find(e=>e.t=='boss'&&e.hp>0);if(b){const L=[['郭芙蓉','一剑！'],['白展堂','毛巾抽脸！'],['吕秀才','子曰：看砖！'],['邢育森','我不叫人了！'],['佟掌柜','算盘砸脸，不收钱！']];const [w,s]=L[(tick>>3)%5];b.hp-=2;b.hurt=10;sfx('hit');floats.push({x:b.x-40,y:b.y-50,s:w+'：'+s,l:80});if(b.hp<=0){b.hp=0;win();}}}}
  for(const it of items)if(!it.got&&area=='hill'&&Math.hypot(it.x-P.x,it.y-P.y)<26){it.got=1;sfx('coin');note('采到：'+it.n+'（'+items.filter(i=>i.got).length+'/4）');}
  for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.l--;}parts=parts.filter(p=>p.l>0);
  for(const f of floats){f.y-=.6;f.l--;}floats=floats.filter(f=>f.l>0);
@@ -3995,18 +3999,18 @@ function onEnter(){
  if(EP==3&&ph=='herbs'&&area=='hill'&&!items.length){items=[['甘草',5,4],['山椒',25,5],['薄荷',6,16],['野蜂蜜',24,15]].map(([n,x,y])=>({n,x:x*T+16,y:y*T+16}));spawn([['dog',10,5],['dog',20,14],['dog',22,4],['dog',8,14]]);}}
 function progress(){if(dlg)return;const alive=ents.some(e=>e.hp>0&&e.area==area);
  if(EP==0&&ph=='serve'&&served>=5){ph='thugs';carry=0;setNPC();say(CAST.liu.name,['五道全对！大嘴，你这腿比你的炒勺还利索。','……门口怎么吵吵嚷嚷的？去看看！'],()=>note('去大街看看（大堂南门）'));}
- if(EP==0&&ph=='thugs'&&area=='street'&&ents.length&&!alive){ph='talk0';ents=[];say('乔不留',['地痞们一溜烟跑了。','周捕快这才从街角探出头来……'],()=>note('跟周铁头说话'));}
- if(EP==1&&ph=='chase'&&ents.length&&!alive){ph='done1';ents=[];P.coins+=20;say('卖艺的',['别打别打！钱袋还你！','钱老爷：“误会乔跑堂了，赏你们二十文！”乔不留：“大嘴，谢了兄弟。”','三娘：“交柜上。……算了，你自己留着。”'],recap);}
- if(EP==2&&ph=='duck'&&ents.length&&!alive){ph='talk2';ents=[];say('黑鸭帮主',['嘎——撤！这店的厨子比护院还狠！'],()=>note('回大堂找柳二丫'));}
- if(EP==3&&ph=='herbs'&&items.length&&items.every(i=>i.got)){ph='back';note('药齐了，回大堂找温如玉');}}
-function win(){if(ph=='won')return;ph='won';ents.forEach(e=>e.hp=0);say('金万两',['一个厨子、一个跑堂、一个掌柜、一个书生、一个丫头、一个捕快……','怎么就打不散呢？','三娘：“因为这儿叫——同难客栈。”'],recap);}
+ if(EP==0&&ph=='thugs'&&area=='street'&&ents.length&&!alive){ph='talk0';ents=[];say('白展堂',['地痞们一溜烟跑了。','邢捕头这才从街角探出头来……'],()=>note('跟邢育森说话'));}
+ if(EP==1&&ph=='chase'&&ents.length&&!alive){ph='done1';ents=[];P.coins+=20;say('卖艺的',['别打别打！钱袋还你！','钱老爷：“误会乔跑堂了，赏你们二十文！”白展堂：“大嘴，谢了兄弟。”','掌柜：“交柜上。……算了，你自己留着。”'],recap);}
+ if(EP==2&&ph=='duck'&&ents.length&&!alive){ph='talk2';ents=[];say('黑鸭帮主',['嘎——撤！这店的厨子比护院还狠！'],()=>note('回大堂找郭芙蓉'));}
+ if(EP==3&&ph=='herbs'&&items.length&&items.every(i=>i.got)){ph='back';note('药齐了，回大堂找吕秀才');}}
+function win(){if(ph=='won')return;ph='won';ents.forEach(e=>e.hp=0);say('金万两',['一个厨子、一个跑堂、一个掌柜、一个书生、一个丫头、一个捕快……','怎么就打不散呢？','掌柜：“因为这儿叫——同难客栈。”'],recap);}
 function slash(){const reach=46;for(const e of ents){if(e.hp<=0||e.area!=area)continue;const vx=e.x-P.x,vy=e.y-P.y,d=Math.hypot(vx,vy);if(d>reach+e.r)continue;const dot=(vx*P.dir.x+vy*P.dir.y)/(d||1);if(dot<0.2&&d>e.r+4)continue;
  hitE(e,vx/(d||1),vy/(d||1));}}
 function hitE(e,nx,ny){e.hp--;HS=e.t=='boss'?5:3;TRA=Math.min(1,TRA+(e.t=='boss'?.3:.22));if(e.hp<=0){TRA=Math.min(1,TRA+.2);FL=.22;FLC='#fff8e0';}e.hurt=e.t=='thief'?40:10;sfx('hit');const kb=e.t=='boss'?6:14;move(e,nx*kb,ny*kb,e.r);for(let i=0;i<6;i++)parts.push({x:e.x,y:e.y,vx:Math.random()*4-2,vy:Math.random()*4-2,l:20,c:i&1?'#fff8e0':'#ffd24a'});
  if(e.hp<=0){if(e.pay){P.coins+=e.pay;sfx('coin');floats.push({x:e.x,y:e.y,s:'+'+e.pay+'文',l:50});}if(e.t=='boss')win();}}
 function hurtP(d,nx,ny){if(P.inv>0||P.dash>0)return;P.hp-=d;P.inv=50;HS=4;TRA=Math.min(1,TRA+.5);FL=.4;FLC='#c02818';P.kx=nx*5;P.ky=ny*5;sfx('hurt');if(P.hp<=0){P.hp=0;mode='over';}}
 // ================= 界面（水墨 · 木纹）=================
-function objective(){return({serve0:'听掌柜吩咐',serve:'上菜 '+served+'/5 · 剩'+Math.ceil(timer/60)+'息 · '+(carry?'送到'+carry+'号桌':'去出菜口端菜'),thugs:'去大街赶走地痞',talk0:'跟周铁头说话（大街）',clue:'问各桌客人 '+Object.keys(clues).length+'/3',accuse:'指认小偷',chase:KT('大街上追卖艺的（K 闪身）','大街上追卖艺的（「闪」闪身）'),duck:'去大街打退黑鸭帮',talk2:'回大堂找柳二丫',herbs:'后山采药 '+items.filter(i=>i.got).length+'/4',back:'回大堂找温如玉',boss:'和大伙儿一起打败金万两'})[ph]||'';}
+function objective(){return({serve0:'听掌柜吩咐',serve:'上菜 '+served+'/5 · 剩'+Math.ceil(timer/60)+'息 · '+(carry?'送到'+carry+'号桌':'去出菜口端菜'),thugs:'去大街赶走地痞',talk0:'跟邢育森说话（大街）',clue:'问各桌客人 '+Object.keys(clues).length+'/3',accuse:'指认小偷',chase:KT('大街上追卖艺的（K 闪身）','大街上追卖艺的（「闪」闪身）'),duck:'去大街打退黑鸭帮',talk2:'回大堂找郭芙蓉',herbs:'后山采药 '+items.filter(i=>i.got).length+'/4',back:'回大堂找吕秀才',boss:'和大伙儿一起打败金万两'})[ph]||'';}
 
 let GR={l:0,t:0,w:1,h:1},CR={l:0,t:0,w:1,h:1};
 function rects(){const a=cv.getBoundingClientRect(),b=gcv.getBoundingClientRect();CR={l:a.left,t:a.top,w:a.width||1,h:a.height||1};GR={l:b.left,t:b.top,w:b.width||1,h:b.height||1};}
@@ -4040,14 +4044,14 @@ function bigTitle(s,y,size=88){ctx.save();ctx.font='bold '+size+'px '+SERIF;ctx.
 function card(title,lines,pr,y0=230){shade(.55,.35);ink(120,70,W-240,H-140,.92);bigTitle(title,160,52);ctx.fillStyle='#efe2c4';lines.forEach((s,i)=>tx(s,W/2,y0+i*40,'23px '+SANS,'#efe2c4','center'));if(pr)prompt(pr,H-96);}
 function drawUI(){ctx=MC;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);ctx.clearRect(0,0,W,H);ctx.globalAlpha=1;
  if(mode=='title'){shade(.6,.05);bigTitle('同难客栈',120);tx('有 难 同 当 · 有 饭 同 吃',W/2,176,'24px '+SERIF,'#e2c88e','center');
-  ['葫芦镇上一家小店，一群凑不齐一身武艺的人。','两篇十回：李大嘴篇 · 乔不留·盗圣传'].forEach((s,i)=>tx(s,W/2,222+i*32,'21px '+SANS,'#efe2c4','center'));
+  ['葫芦镇上一家小店，一群凑不齐一身武艺的人。','三篇十五回：李大嘴篇 · 白展堂·盗圣传 · 吕秀才篇'].forEach((s,i)=>tx(s,W/2,222+i*32,'21px '+SANS,'#efe2c4','center'));
   tx(KT('WASD 移动 · J 大勺 · L 扔辣椒 · K 闪身 · E 交谈 · Q 吃包子','摇杆 移动 · 勺 挥大勺 · 椒 扔辣椒 · 闪 闪身 · 谈 交谈 · 包 吃包子'),W/2,H-28,'18px '+SANS,'#cdbb94','center');
   prompt(hasSave()?KT('回车/点屏幕 新游戏 · C 继续存档','点屏幕 新游戏 · 下方按钮 继续存档'):KT('按 回车 / 点屏幕 开始','点屏幕 开始'),H-78);return;}
- if(mode=='cast'){shade(.55,.1);bigTitle('同难客栈 · 人物',78,40);['ma','qiao','liu','wen','ya','zhou'].forEach(id=>{const C=CAST[id],f=LINE['f_'+id],[x,y]=proj(f.position.x,0,f.position.z);ctx.font='15px '+SANS;
-   tx(C.role+' · '+C.name,x,y+30,'bold 21px '+SERIF,'#ead39a','center');ctx.fillStyle='#efe2c4';ctx.textAlign='center';let line='',yy=y+56;for(const ch of C.quirk){if(ctx.measureText(line+ch).width>140){tx(line,x,yy,'16px '+SANS,'#efe2c4','center');yy+=21;line='';}line+=ch;}tx(line,x,yy,'16px '+SANS,'#efe2c4','center');});
+ if(mode=='cast'){shade(.55,.1);bigTitle('同难客栈 · 人物',78,40);['beggar','lady','wen','mei','ya','liu','ma','qiao','zhou','yan'].forEach(id=>{const C=CAST[id],f=LINE['f_'+id],[x,y]=proj(f.position.x,0,f.position.z);ctx.font='13px '+SANS;
+   tx(C.name,x,y+26,'bold 19px '+SERIF,'#ead39a','center');tx(C.role,x,y+46,'14px '+SANS,'#cdbb94','center');});
   if((tick>>5)&1)tx(KT('你扮演大厨 李大嘴 · 按回车 / 点屏幕 开工','你扮演大厨 李大嘴 · 点屏幕 开工'),W/2,H-14,'bold 19px '+SANS,'#ead39a','center');return;}
  if(mode=='recap'){const E=EPS[EP];card(E.t+' · 完',[E.gag,'','“'+E.moral+'”','','工钱累计 '+P.coins+' 文'],EP<4?'按 回车 / 点屏幕 看下一回':'按 回车 / 点屏幕 看结局',250);return;}
- if(mode=='end'){card('大结局 · 同甘共苦',['金万两灰溜溜走了，门板记在他账上。','三娘打着算盘说：今天的饭不收钱——就今天。','二丫磨剑，大嘴炖汤，如玉记账，铁头站岗，不留擦桌。','镇上人都说，这店名字起得晦气。','三娘说：“晦气什么？同难，才见真心。”'],KT('按 回车 回到标题','点屏幕 回到标题'),236);return;}
+ if(mode=='end'){card('大结局 · 同甘共苦',['金万两灰溜溜走了，门板记在他账上。','掌柜打着算盘说：今天的饭不收钱——就今天。','芙蓉磨剑，大嘴炖汤，如玉记账，铁头站岗，不留擦桌。','镇上人都说，这店名字起得晦气。','掌柜说：“晦气什么？同难，才见真心。”'],KT('按 回车 回到标题','点屏幕 回到标题'),236);return;}
  // 世界内标签
  if(area=='inn'){TB.forEach(([x,y],i)=>{const [sx,sy]=proj(x+1,1,y+.5);tx((i+1)+'号桌',sx,sy,'bold 18px '+SERIF,'#f3e3b8','center',.9);});const [kx,ky]=proj(15,1.3,2.6);if(ph=='serve'&&!carry)label('出菜口 · 端菜',kx,ky,18,'#ffe2a0');
   const mx=27*T+16,my=16*T+16;if(Math.hypot(mx-P.x,my-P.y)<100){const [a,b]=pp(mx,my,1.6);label('串门的小妹',a,b,17);}}
@@ -4063,7 +4067,7 @@ function drawUI(){ctx=MC;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);ctx.cl
  if(carry){const [a,b]=pp(P.x,P.y,2.05);label(carry+'号桌',a,b,17,'#ffe2a0');}
  for(const f of floats){const [a,b]=pp(f.x,f.y,1.9+(50-Math.min(50,f.l))*.012);tx(f.s,a,b,'bold 21px '+SANS,'#ffd98a','center',.9);}
  drawHUD();
- if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('李大嘴躺平了',H/2-20,56);tx('三娘：“躺着也算上班，但不算工钱。”',W/2,H/2+46,'22px '+SANS,'#efe2c4','center');tx(KT('按回车重来本回','点屏幕重来本回'),W/2,H/2+86,'bold 20px '+SANS,'#ead39a','center');}}
+ if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('李大嘴躺平了',H/2-20,56);tx('掌柜：“躺着也算上班，但不算工钱。”',W/2,H/2+46,'22px '+SANS,'#efe2c4','center');tx(KT('按回车重来本回','点屏幕重来本回'),W/2,H/2+86,'bold 20px '+SANS,'#ead39a','center');}}
 function draw(){if(++rectT%30==1)rects();render3D();drawUI();if(FL>0){flashEl.style.background=FLC;flashEl.style.opacity=FL;FL=Math.max(0,FL-.04);}else if(flashEl.style.opacity!=='0')flashEl.style.opacity=0;}
 let rectT=0;
 
@@ -4204,24 +4208,38 @@ function buildHill(){const g=new THREE.Group(),A=AREAS.hill.map,r=rng(21);
  for(let i=0;i<10;i++)tree(-4+r()*38,-4-r()*4,1.2+r()*.6);
  return g;}
 // ---------- 人物 ----------
-const SKIN='#c49a7c',BLK='#16110d';
+const SKIN='#e8c2a4',BLK='#16110d';
 function hcap(p,r,m,x,y,z,rx=0){const o=new THREE.Mesh(geo('hc'+r,()=>new THREE.SphereGeometry(r,10,6,0,Math.PI*2,0,Math.PI*.55)),m);o.position.set(x,y,z);o.rotation.x=rx;sh(o);p.add(o);return o;}
 function torus(p,r,t,m,x,y,z){const o=new THREE.Mesh(geo('t'+r+'_'+t,()=>new THREE.TorusGeometry(r,t,5,12)),m);o.position.set(x,y,z);sh(o,0);p.add(o);return o;}
 const LOOK={
- ma:{robe:'#4b5446',inner:'#e6e0d0',trim:'#2c312a',sash:'#1e1e1c',pants:'#1b1a18',hair:'#16110d',hs:'short',len:'short',wide:1.24,x(u){torus(u.H,.122,.03,M('#d1a23e',{flatShading:false}),0,.035,0).rotation.x=Math.PI/2;const kn=M('#d1a23e',{flatShading:false});bx(u.H,.05,.16,.03,kn,.05,-.02,-.13,0).rotation.z=.5;bx(u.H,.05,.14,.03,kn,-.02,-.03,-.13,0).rotation.z=-.3;
+ // 李大嘴：墨绿暗纹短袍、黑交领、黑宽裤、白内袖、金黄头巾侧结、刺头
+ ma:{robe:'#4f5a50',rt:'mottle',rc:['#3a443c','#67715f','#2f3832'],inner:'#f2efe8',lapel:{c:'#141614',w:.05},sleeveIn:'#f2efe8',sash:{c:'#141412',h:.09,knot:'knot',ends:.3},pants:'#1a1c1b',wpants:1.5,hair:'#141210',hs:'spiky',len:'short',wide:1.3,face:{mouth:'grin',brow:1.2},x(u){const y=M('#e8c870',{flatShading:false});const t=torus(u.H,.124,.026,y,0,.05,0);t.rotation.x=Math.PI/2;t.scale.z=1.25;
+  const k=sph(u.H,.035,y,.12,.07,-.04,6,5,0);for(const [a,l] of [[.9,.14],[1.5,.12]]){const e=bx(u.H,.05,l,.015,y,.16,.03,-.04,0);e.rotation.z=a;}
   const T=new THREE.Group();T.position.set(0,-.62,0);u.arms[1].add(T);const hd=cyl(T,.016,.016,.62,M('#5a3a22'),0,0,.24,5);hd.rotation.x=Math.PI/2;const bw=sph(T,.1,M('#7d7a74',{metalness:.5,roughness:.35,flatShading:false}),0,-.02,.58,10,6);bw.scale.set(1,.55,1);u.tool=T;}},
- qiao:{robe:'#566878',inner:'#ecebe4',trim:'#3a4856',sash:'#3b4650',pants:'#2e3236',hs:'topknot',flare:1.1,x(u){const w=M('#e8e2d2');const t=bx(u.b,.12,.46,.03,w,-.2,1.3,.15);t.rotation.z=.15;bx(u.b,.12,.38,.03,w,-.2,1.33,-.13,0).rotation.z=.15;bx(u.b,.13,.04,.3,w,-.22,1.52,0,0);}},
- liu:{robe:'#4d7b5f',inner:'#efece2',skirt:'#e9e5d8',trim:'#2f5a44',sash:'#d9d3c0',female:1,hs:'updo',flare:1.25,x(u){const gd=M('#c9a24a',{metalness:.6,roughness:.35,flatShading:false});bx(u.H,.24,.016,.016,gd,0,.25,-.03,0).rotation.z=.35;sph(u.H,.024,M('#e8e4f0',{flatShading:false}),.11,.28,-.02,6,4,0);sph(u.H,.02,M('#8a2a22'),-.08,.22,-.06,6,4,0);}},
- wen:{robe:'#8a877c',stripe:1,inner:'#e2ded2',trim:'#2a2826',zig:1,sash:'#4a4842',hs:'long',flare:1.2,tall:1.06,x(u){const gm=M('#2a2622',{metalness:.3});torus(u.H,.034,.006,gm,.046,.012,.122);torus(u.H,.034,.006,gm,-.046,.012,.122);bx(u.H,.03,.006,.006,gm,0,.016,.124,0);}},
- ya:{robe:'#b0372c',inner:'#f2eee6',skirt:'#f0ece6',floral:1,apron:1,trim:'#7a1f18',sash:'#3c5d92',vest:1,female:1,hs:'braids',flare:1.15,x(u){
-  const S=new THREE.Group();S.position.set(0,1.15,-.17);S.rotation.z=.75;u.b.add(S);bx(S,.05,.8,.04,M('#241812'),0,0,0);bx(S,.04,.22,.04,M('#3a2a1c'),0,.5,0);bx(S,.16,.03,.05,M('#b8923a',{metalness:.6,roughness:.4}),0,.39,0,0);}},
- zhou:{robe:'#2d4d86',inner:'#ece8dc',trim:'#1b2c50',sash:'#7a8aa0',pants:'#151515',hs:'short',flare:1.2,x(u){const h=M('#141212');bx(u.H,.25,.13,.25,h,0,.12,-.01);bx(u.H,.21,.12,.21,h,0,.24,-.04);for(const s of[-1,1]){const wg=bx(u.H,.2,.025,.06,h,s*.2,.2,-.12);wg.rotation.z=s*.15;}
-  bx(u.H,.05,.018,.02,h,.03,-.05,.118,0).rotation.z=-.3;bx(u.H,.05,.018,.02,h,-.03,-.05,.118,0).rotation.z=.3;bx(u.b,.42,.12,.4,M('#3a6aa8'),0,1.38,0,0);
-  const sw=bx(u.b,.05,.6,.05,M('#1d1a18'),.26,.75,-.05);sw.rotation.x=.35;}},
- mei:{robe:'#7d7b74',inner:'#e8e4da',trim:'#55534c',sash:'#b2332a',bow:1,pants:'#5a5852',female:1,hs:'buns',scale:.74,flare:1.05},
- boss:{robe:'#b0622e',inner:'#e8d8b8',trim:'#7a3e18',sash:'#d6b23a',bee:1,wide:1.42,scale:1.18,hs:'short',flare:1.2,x(u){const hm=M('#8a4a22',{flatShading:false}),gd=M('#d6b23a',{metalness:.6,roughness:.35,flatShading:false});const c=sph(u.H,.14,hm,0,.08,0,12,8);c.scale.set(1,.7,1);cyl(u.H,.17,.17,.03,hm,0,.06,0,14);sph(u.H,.035,gd,0,.18,0,8,6,0);sph(u.H,.03,M('#2a6a4a',{metalness:.3,roughness:.3}),0,.1,.13,6,4,0);bx(u.H,.12,.02,.02,BLKM(),0,-.05,.12,0);}},
- lady:{robe:'#b8382c',inner:'#f0e8dc',skirt:'#c0402f',trim:'#8a2420',sash:'#d6a640',bow:1,female:1,hs:'long',flare:1.3,x(u){for(let i=0;i<5;i++)sph(u.H,.016,M('#f4f0e6',{flatShading:false}),-.08+i*.04,.2,-.04,6,4,0);}},
- beggar:{robe:'#6a5a3e',inner:'#5a4a30',trim:'#3e3222',sash:'#2a2218',pants:'#3a3024',tatter:1,hs:'wild',len:'short',x(u){const T=new THREE.Group();T.position.set(0,-.6,0);u.arms[0].add(T);cyl(T,.022,.022,1.7,M('#b8a050'),0,.25,.06,6);}},
+ // 白展堂：灰条纹长袍、黑白锯齿领与袖口、白腰带结、高马尾+鬓发
+ qiao:{robe:'#8d8678',rt:'stripe',rc:['#4c4840','#b4ad9e'],inner:'#efece4',lapel:{c:'#151515',w:.06,tex:'zig',back:1},cuff:'zig',sleeveIn:'#efece4',sash:{c:'#ddd6c8',h:.07,knot:'knot',ends:.26},pants:'#2a2826',hair:'#141210',hs:'pony',flare:1.12,tall:1.04,face:{mouth:'smile'}},
+ // 佟掌柜：红短褂、藏蓝交领与腰带后大结、粉蓝斜纹围裙、白底碎花袖与长裙、双辫红绳
+ liu:{robe:'#b0282a',jacket:1,inner:'#f6f2ee',lapel:{c:'#22386a',w:.05},sleeve:'#f6f0f2',sleeveT:'dots',skirt:'#f4eef0',floral:1,apron:'diag',sash:{c:'#22386a',h:.08,knot:'bow',ends:.55,back:'bow'},backPanel:'#b0282a',female:1,hair:'#141010',hs:'braids2',flare:1.2,face:{mouth:'smile',lash:1},x(u){const r=M('#c42a2a',{flatShading:false});const S=new THREE.Group();S.position.set(0,-.6,0);u.arms[1].add(S);const st=cyl(S,.012,.012,.6,r,0,-.18,.05,5);st.rotation.x=.35;}},
+ // 吕秀才：深石青长袍、灰蓝宽领缘、白内领、浅褐腰带垂结、发髻小冠
+ wen:{robe:'#3d5866',rt:'damask',rc:['#33505e','#4b6876'],inner:'#f2eee6',lapel:{c:'#7d8c92',w:.07},sleeveIn:'#f2eee6',cuff:'#7d8c92',sash:{c:'#9c8f72',h:.07,knot:'knot',ends:.42},pants:'#263440',hair:'#141210',hs:'topknot',flare:1.25,tall:1.05,face:{mouth:'smile'}},
+ // 郭芙蓉：绿外披敞襟长衣、白衣白碎花长裙、绿腰带、长发半髻+白花绿丝带
+ ya:{robe:'#3f9a70',open:1,inner:'#f4f2ec',lapel:{c:'#2f7a58',w:.05},sleeveIn:'#f4f2ec',skirt:'#f6f2ea',floral:'soft',sash:{c:'#3f9a70',h:.07,knot:'bow',ends:.5},female:1,hair:'#141010',hs:'fu',flare:1.3,face:{mouth:'smile',lash:1}},
+ // 邢育森：宝蓝官袍、蓝白条内袖、浅蓝围巾、黑高方帽蓝箍、八字胡+山羊须
+ zhou:{robe:'#2c3c8c',inner:'#ece8dc',lapel:{c:'#22306e',w:.05},sleeveIn:'#8ea0d0',sleeveT:'bstripe',sash:{c:'#1a1f3a',h:.08,knot:'knot',ends:.3},pants:'#151515',hs:'short',hair:'#141210',flare:1.3,wide:1.08,face:{mouth:'grin'},x(u){const h=M('#141414',{flatShading:false}),bl=M('#3a52b8',{flatShading:false});const c=cyl(u.H,.13,.125,.12,bl,0,.1,0,14);cyl(u.H,.16,.13,.24,h,0,.27,-.01,4).rotation.y=Math.PI/4;bx(u.H,.24,.02,.08,h,0,.4,-.02,0);
+  const sc=M('#8aa0d4',{flatShading:false});const t=torus(u.b,.17,.06,sc,0,1.47,0);t.rotation.x=Math.PI/2;t.scale.set(1.15,.8,1);bx(u.b,.1,.34,.03,sc,.08,1.28,.16,0).rotation.z=-.15;
+  const bk=M('#1a1412');bx(u.H,.05,.014,.02,bk,.026,-.052,.118,0).rotation.z=-.35;bx(u.H,.05,.014,.02,bk,-.026,-.052,.118,0).rotation.z=.35;cone(u.H,.022,.06,bk,0,-.12,.1,5,0).rotation.x=Math.PI;}},
+ // 莫小贝：灰短交领上衣、红腰带长垂、蓝灰灯笼裤、短发顶髻
+ mei:{robe:'#6c6f6e',inner:'#ece8e0',lapel:{c:'#4c4f4e',w:.04},sash:{c:'#c0282a',h:.08,knot:'knot',ends:.34},pants:'#4a5470',wpants:1.45,hair:'#141010',hs:'kid',len:'hip',scale:.72,head:1.22,face:{mouth:'grin'}},
+ // 燕小六：橘褐圆领袍、黄黑条领与腰带长垂、橘色圆帽黄箍、圆脸胖
+ yan:{robe:'#c4783a',rt:'mottle',rc:['#a8622a','#d08a48','#b46a30'],round:'#e8b030',sleeveIn:'#c4783a',sash:{c:'#e8b030',tex:'bee',h:.1,ends:.62,endsW:.17},pants:'#3a2a1c',hs:'short',hair:'#141210',wide:1.42,flare:1.22,scale:1.0,head:1.06,face:{round:1,mouth:'grin',blush:1},x(u){const c=M('#c46a2c',{flatShading:false}),y=M('#e8b030',{flatShading:false});const k=sph(u.H,.135,c,0,.08,-.005,12,8);k.scale.set(1,.62,1);cyl(u.H,.16,.16,.035,c,0,.055,0,14);torus(u.H,.135,.014,y,0,.075,0).rotation.x=Math.PI/2;
+  const T=new THREE.Group();T.position.set(0,-.62,0);u.arms[0].add(T);sph(T,.06,M('#2a2420'),0,-.02,.05,8,6);}},
+ // 金万两（反派）：紫酱色团花绸袍、金边、黑瓜皮帽镶玉
+ boss:{robe:'#5a2a3a',rt:'coin',rc:['#c8a040','#6a3446'],inner:'#e8d8b8',lapel:{c:'#c8a040',w:.05},sleeveIn:'#e8d8b8',cuff:'#c8a040',sash:{c:'#c8a040',h:.1,knot:'knot',ends:.3},wide:1.42,scale:1.18,hs:'short',flare:1.2,face:{mouth:'smile'},x(u){const hm=M('#1a1414',{flatShading:false}),gd=M('#d6b23a',{metalness:.6,roughness:.35,flatShading:false});const c=sph(u.H,.135,hm,0,.07,0,12,8);c.scale.set(1,.62,1);sph(u.H,.03,gd,0,.16,0,8,6,0);sph(u.H,.026,M('#2a8a5a',{metalness:.3,roughness:.3}),0,.1,.125,6,4,0);bx(u.H,.12,.02,.02,BLKM(),0,-.05,.12,0);}},
+ // 祝无双：红色交领长袍、白内领、杏黄腰带大结长垂、及腰长发、白蓝花冠、耳坠
+ lady:{robe:'#c84a44',rt:'damask',rc:['#b83e3a','#d86a5a'],inner:'#f6efe6',lapel:{c:'#a8342e',w:.04},sleeveIn:'#f6efe6',skirt:'#c8443e',sash:{c:'#f0a860',h:.1,knot:'bow',ends:.7,endsW:.07},female:1,hair:'#141010',hs:'lady',flare:1.35,face:{mouth:'smile',lash:1},x(u){const e=M('#58a8d8',{flatShading:false});for(const s of[-1,1])sph(u.H,.012,e,s*.118,-.045,.01,5,4,0);}},
+ // 丐帮小米：橄榄褐破补长衫、黑内衣黑绳腰、散乱长发、竹杖、葫芦
+ beggar:{robe:'#5e5a42',rt:'tatter',rc:['#4a4632','#7a6c4c','#3a3a2c','#6c6448'],inner:'#16130f',lapel:{c:'#3e3a2a',w:.05},sash:{c:'#121010',h:.05,knot:'knot',ends:.55,endsW:.03},pants:'#2a2620',tatter:1,hs:'wildlong',hair:'#18140f',flare:1.15,face:{mouth:'smile',stub:1},x(u){const T=new THREE.Group();T.position.set(0,-.6,0);u.arms[0].add(T);const bm=M('#d8b060',{flatShading:false});cyl(T,.022,.022,1.75,bm,0,.25,.06,6);for(let i=0;i<6;i++)cyl(T,.026,.026,.02,M('#9a7838'),0,-.5+i*.28,.06,6,0);
+  const g=M('#a8682a',{flatShading:false});sph(u.b,.07,g,.2,.86,.06,8,6);sph(u.b,.05,g,.2,.97,.06,8,6);cyl(u.b,.012,.012,.12,M('#2a1a10'),.2,1.03,.06,4,0);}},
  thug:{robe:'#535d3c',inner:'#a8a08a',trim:'#363d27',sash:'#262620',hs:'short',len:'short',x(u){torus(u.H,.122,.022,M('#2a2420'),0,.04,0).rotation.x=Math.PI/2;}},
  thief:{robe:'#75633a',inner:'#c8b890',trim:'#4a3e24',sash:'#3a3020',hs:'topknot',len:'short',x(u){torus(u.H,.122,.024,M('#8e2a20'),0,.04,0).rotation.x=Math.PI/2;}},
  duck:{robe:'#242428',inner:'#55555a',trim:'#121214',sash:'#3a3a40',hs:'short',len:'short',x(u){sph(u.H,.145,M('#1d1d20'),0,.03,-.02,10,7);const b=cone(u.H,.055,.16,M('#c27a2e'),0,-.01,.17,6);b.rotation.x=Math.PI/2;}},
@@ -4230,55 +4248,102 @@ const LOOK={
 };
 function BLKM(){return M(BLK);}
 const CLOTH={};
-function clothTex(key,base,fn){if(CLOTH[key])return CLOTH[key];const c=document.createElement('canvas');c.width=c.height=128;const g=c.getContext('2d');g.fillStyle=base;g.fillRect(0,0,128,128);fn(g);
- // 水墨笔触：淡淡的纹理
- for(let i=0;i<220;i++){g.fillStyle=`rgba(${Math.random()<.5?'255,250,235':'20,15,10'},${.03+Math.random()*.05})`;g.fillRect(Math.random()*128,Math.random()*128,2+Math.random()*10,1+Math.random()*2);}
+function clothTex(key,base,fn,W=128,Hh=128,noise=1){if(CLOTH[key])return CLOTH[key];const c=document.createElement('canvas');c.width=W;c.height=Hh;const g=c.getContext('2d');g.fillStyle=base;g.fillRect(0,0,W,Hh);fn(g,W,Hh);
+ if(noise)for(let i=0;i<W*Hh/75;i++){g.fillStyle=`rgba(${Math.random()<.5?'255,250,235':'20,15,10'},${.03+Math.random()*.05})`;g.fillRect(Math.random()*W,Math.random()*Hh,2+Math.random()*10,1+Math.random()*2);}
  const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return CLOTH[key]=t;}
-function CM(c,tex){return new THREE.MeshStandardMaterial({color:'#fff',map:tex,roughness:.9,metalness:0});}
+function CM(c,tex,o){return new THREE.MeshStandardMaterial(Object.assign({color:'#fff',map:tex,roughness:.9,metalness:0},o||{}));}
 const SM=(c)=>M(c,{flatShading:false,roughness:.88});
+const TEXF={
+ stripe:(rc)=>g=>{for(let x=0;x<128;x+=8){g.fillStyle=rc[0];g.globalAlpha=.55;g.fillRect(x,0,2,128);g.fillStyle=rc[1];g.globalAlpha=.5;g.fillRect(x+4,0,1.5,128);}g.globalAlpha=1;},
+ mottle:(rc)=>g=>{for(let i=0;i<90;i++){g.fillStyle=rc[i%rc.length];g.globalAlpha=.35;g.beginPath();g.ellipse(Math.random()*128,Math.random()*128,4+Math.random()*12,2+Math.random()*6,Math.random()*3,0,7);g.fill();}g.globalAlpha=1;},
+ tatter:(rc)=>g=>{for(let i=0;i<46;i++){g.fillStyle=rc[i%rc.length];g.globalAlpha=.8;g.fillRect(Math.random()*128,Math.random()*128,8+Math.random()*26,6+Math.random()*16);}g.globalAlpha=.7;g.strokeStyle='#2a2418';for(let i=0;i<14;i++){const x=Math.random()*128,y=Math.random()*128;g.strokeRect(x,y,10+Math.random()*14,8+Math.random()*10);}g.globalAlpha=1;},
+ damask:(rc)=>g=>{g.globalAlpha=.6;for(let y=8;y<128;y+=32)for(let x=(y/32%2)*16+8;x<128;x+=32){g.strokeStyle=rc[1];g.lineWidth=2;g.beginPath();g.arc(x,y,7,0,7);g.stroke();g.fillStyle=rc[0];g.fillRect(x-2,y-2,4,4);}g.globalAlpha=1;},
+ coin:(rc)=>g=>{for(let y=10;y<128;y+=32)for(let x=(y/32%2)*16+10;x<128;x+=32){g.strokeStyle=rc[0];g.lineWidth=2.5;g.beginPath();g.arc(x,y,8,0,7);g.stroke();g.strokeRect(x-3,y-3,6,6);}},
+};
+function zigTex(){return clothTex('zig','#141414',(g)=>{g.fillStyle='#f2efe6';for(let y=0;y<128;y+=16){g.beginPath();g.moveTo(4,y);g.lineTo(28,y+8);g.lineTo(4,y+16);g.closePath();g.fill();}},32,128,0);}
+function cylP(p,rt,rb,h,m,x,y,z,seg,ts,tl,c=1){const o=new THREE.Mesh(geo('cp'+rt+'_'+rb+'_'+h+'_'+seg+'_'+ts+'_'+tl,()=>new THREE.CylinderGeometry(rt,rb,h,seg,1,true,ts,tl)),m);o.position.set(x,y,z);sh(o,c);p.add(o);return o;}
+const DSM=(m)=>{const k=m.uuid+'ds';return MATS[k]||(MATS[k]=Object.assign(m.clone(),{side:THREE.DoubleSide}));};
 function hair(H,o,hm){const st=o.hs||'short';
  const cap=hcap(H,.128,hm,0,.012,-.012,-.42);
- if(st=='topknot'){sph(H,.055,hm,0,.16,-.03,8,6);cyl(H,.02,.02,.07,M('#6a5a40'),0,.13,-.03,5,0);}
+ const bangs=(w=.2,h=.05)=>{const b=bx(H,w,h,.04,hm,0,.095,.09,0);b.rotation.x=-.35;};
+ const back=(len,w=.22)=>{const bk=bx(H,w,len,.05,hm,0,-len/2+.06,-.1);bk.rotation.x=.06;return bk;};
+ const locks=(len,dx=.11,z=.03)=>{for(const s of[-1,1]){const l=bx(H,.045,len,.04,hm,s*dx,-len/2+.04,z,0);l.rotation.z=s*.05;}};
+ if(st=='topknot'){sph(H,.055,hm,0,.16,-.03,8,6);cyl(H,.03,.036,.05,M('#2a2420',{metalness:.3}),0,.2,-.03,8,0);bx(H,.14,.008,.008,M('#c8a050',{metalness:.5}),0,.2,-.03,0);}
  if(st=='updo'){sph(H,.085,hm,0,.2,-.05,10,7).scale.set(1.25,.8,.9);sph(H,.06,hm,0,.27,-.02,8,6);}
  if(st=='buns'){for(const s of[-1,1]){sph(H,.055,hm,s*.1,.13,-.02,8,6);sph(H,.018,M('#b2332a'),s*.1,.18,0,5,4,0);}}
- if(st=='long'){const bk=bx(H,.23,.62,.06,hm,0,-.2,-.1);bk.rotation.x=.08;bx(H,.05,.36,.05,hm,.11,-.12,.02,0);bx(H,.05,.36,.05,hm,-.11,-.12,.02,0);}
+ if(st=='long'){back(.62,.23);locks(.36);}
  if(st=='braids'){for(const s of[-1,1]){const b=cyl(H,.026,.016,.46,hm,s*.09,-.24,-.06,6);b.rotation.z=s*.12;sph(H,.022,M('#c0392b'),s*.11,-.47,-.06,5,4,0);}}
- if(st=='wild'){for(let i=0;i<9;i++){const a=i/9*Math.PI*2;const k=cone(H,.045,.2,hm,Math.cos(a)*.11,.06+Math.random()*.06,Math.sin(a)*.1-.03,5,0);k.rotation.set(Math.sin(a)*1.2,0,-Math.cos(a)*1.2);}bx(H,.24,.3,.05,hm,0,-.1,-.1,0);}}
+ if(st=='wild'||st=='wildlong'){for(let i=0;i<11;i++){const a=i/11*Math.PI*2;const k=cone(H,.045,.2,hm,Math.cos(a)*.11,.06+Math.random()*.06,Math.sin(a)*.1-.03,5,0);k.rotation.set(Math.sin(a)*1.2,0,-Math.cos(a)*1.2);}
+  if(st=='wildlong'){back(.5,.26);for(let i=0;i<6;i++){const k=cone(H,.03,.16,hm,-.11+i*.044,-.48,-.1,4,0);k.rotation.x=Math.PI;}for(const s of[-1,1]){const l=bx(H,.06,.34,.04,hm,s*.11,-.11,.04,0);l.rotation.z=s*.12;}sph(H,.04,hm,0,.15,-.07,6,5);bangs(.22,.06);}else bx(H,.24,.3,.05,hm,0,-.1,-.1,0);}
+ if(st=='lady'){back(.82,.24);locks(.4);bangs(.08,.04);const w=M('#f4f2ea',{flatShading:false}),bl=M('#6aa8d8',{flatShading:false});for(let i=0;i<9;i++){const a=-1.2+i*.3;sph(H,.02,i%3?w:bl,Math.sin(a)*.12,.12+Math.cos(a)*.04,Math.cos(a)*.02-.02,6,4,0);}sph(H,.05,hm,0,.15,-.05,8,6);}
+ if(st=='fu'){back(.72,.23);locks(.3);bangs(.2,.05);sph(H,.05,hm,0,.15,-.06,8,6);const w=M('#f6f4ee',{flatShading:false}),gr=M('#2f9a68',{flatShading:false}),yl=M('#e8c050',{flatShading:false});
+  for(const s of[-1,1]){for(let i=0;i<3;i++)sph(H,.022,w,s*(.1+i*.012),.12-i*.02,-.02-i*.02,6,4,0);sph(H,.01,yl,s*.11,.13,0,4,3,0);const r=bx(H,.025,.42,.008,gr,s*.12,-.12,-.07,0);r.rotation.z=s*.1;}}
+ if(st=='braids2'){back(.78,.22);bangs(.04,.06);sph(H,.06,hm,0,.15,-.07,8,6);const rd=M('#c8282a',{flatShading:false});sph(H,.028,rd,0,.19,-.06,6,4,0);
+  for(const s of[-1,1]){const b=cyl(H,.024,.016,.44,hm,s*.105,-.2,.02,6);b.rotation.z=s*.06;for(let i=0;i<4;i++)sph(H,.026,hm,s*(.104+i*.003),-.04-i*.1,.02,5,4,0);bx(H,.012,.12,.012,rd,s*.12,-.45,.02,0);sph(H,.024,rd,s*.115,.09,.0,5,4,0);}}
+ if(st=='pony'){bangs(.08,.05);locks(.42,.105,.04);const tg=new THREE.Group();tg.position.set(0,.16,-.08);H.add(tg);sph(tg,.03,M('#e8e4d8'),0,0,0,5,4,0);const p=bx(tg,.08,.62,.05,hm,0,-.32,-.05);p.rotation.x=.12;}
+ if(st=='spiky'){for(let i=0;i<10;i++){const a=i/10*Math.PI*2;const k=cone(H,.03,.1,hm,Math.cos(a)*.08,.15,Math.sin(a)*.08-.02,4,0);k.rotation.set(Math.sin(a)*.7,0,-Math.cos(a)*.7);}}
+ if(st=='kid'){bangs(.2,.06);sph(H,.045,hm,0,.17,-.03,8,6);bx(H,.07,.015,.015,M('#c0282a'),0,.16,-.01,0);}
+}
 function fig(id,col){const o=LOOK[id]||{robe:col||'#6a6258',inner:'#d8d2c4',trim:'#3a352e',sash:'#2a2620',hs:['short','topknot','long'][(col||'').length%3]};const root=new THREE.Group(),b=new THREE.Group();root.add(b);const wd=o.wide||1,tl=o.tall||1;
- let robeT=null;if(o.stripe)robeT=clothTex(id+'s',o.robe,g=>{for(let x=0;x<128;x+=10){g.fillStyle='rgba(40,38,34,.35)';g.fillRect(x,0,3,128);}});
- if(o.tatter)robeT=clothTex(id+'t',o.robe,g=>{for(let i=0;i<40;i++){g.fillStyle=['#4a3e2a','#7e6c48','#58482e'][i%3];g.fillRect(Math.random()*128,Math.random()*128,10+Math.random()*30,6+Math.random()*16);}});
- const R=robeT?CM(o.robe,robeT):SM(o.robe),Tm=SM(o.trim),I=SM(o.inner||'#ddd6c6'),Pm=SM(o.pants||'#2b2420'),S=M(SKIN,{flatShading:false}),hm=M(o.hair||'#17110d',{flatShading:false,roughness:.6}),shoe=M('#191512');
- let Sk=o.skirt?SM(o.skirt):R;if(o.floral)Sk=CM(o.skirt,clothTex(id+'f',o.skirt,g=>{for(let i=0;i<70;i++){g.fillStyle=['#c84a4a','#4a6ab0','#e08aa0'][i%3];g.beginPath();g.arc(Math.random()*128,Math.random()*128,2+Math.random()*2,0,7);g.fill();}}));
- const legs=[],arms=[],short=o.len=='short';
- // 腿（长）
- for(const s of[-1,1]){const L=new THREE.Group();L.position.set(s*.085*wd,.88*tl,0);b.add(L);cyl(L,.06,.05,.84*tl,Pm,0,-.42*tl,0,8);bx(L,.12,.07,.24,shoe,0,-.85*tl,.04);legs.push(L);}
- // 内裙 + 外袍下摆（喇叭形），走路时微摆
- const sk=new THREE.Group();sk.position.y=1.02*tl;b.add(sk);const sl=short?.5:.92;
- if(o.skirt||!short){const ik=cyl(sk,.17*wd,(o.female?.33:.3)*wd,sl*tl,o.skirt?Sk:I,0,-sl*tl/2-.02,0,16);ik.scale.z=.82;}
- const ol=short?.48:(o.skirt?.6:.86),ok=cyl(sk,.19*wd,(o.female?.3:.31)*wd*(o.flare||1)*.95,ol*tl,R,0,-ol*tl/2,.0,16);ok.scale.z=.8;
- if(o.apron){const ap=CM('#fff',clothTex('apron','#e8e2d6',g=>{for(let x=0;x<128;x+=16){g.fillStyle='#8a9ac8';g.fillRect(x,0,6,128);g.fillStyle='#e08a9a';g.fillRect(x+9,0,3,128);}}));const a=bx(sk,.34,.6,.02,ap,0,-.34,.2,0);a.rotation.x=-.12;}
- if(o.tatter)for(let i=0;i<7;i++){const a=i/7*Math.PI*2,t=bx(sk,.08,.18,.02,R,Math.sin(a)*.27,-ol*tl-.05,Math.cos(a)*.22,0);t.rotation.y=a;t.rotation.z=(Math.random()-.5)*.6;}
+ const sa0=typeof o.sash=='string'?{c:o.sash,h:o.bee?.2:.1,knot:o.bow?'bow':null,tex:o.bee?'bee':null,ends:o.bee?.5:o.bow?.36:0}:(o.sash||{c:'#2a2620',h:.1});
+ let rt=o.rt||(o.stripe?'stripe':o.tatter?'tatter':null),rc=o.rc||(o.stripe?['#28261f','#b0aa9c']:['#4a3e2a','#7e6c48','#58482e']);
+ const R=rt?CM(o.robe,clothTex(id+'r'+rt,o.robe,TEXF[rt](rc))):SM(o.robe),Tm=SM(o.trim||(o.lapel&&o.lapel.c)||'#2a2620'),I=SM(o.inner||'#ddd6c6'),Pm=SM(o.pants||'#2b2420'),S=M(SKIN,{flatShading:false}),hm=M(o.hair||'#17110d',{flatShading:false,roughness:.6}),shoe=M('#191512');
+ let Sk=o.skirt?SM(o.skirt):R;if(o.floral)Sk=CM(o.skirt,clothTex(id+'f',o.skirt,g=>{const cs=o.floral=='soft'?['#d88a9a','#8aa8d0','#e8b0b8','#9ac0a0']:['#c84a4a','#4a6ab0','#e08aa0','#d06a6a'];for(let i=0;i<60;i++){g.fillStyle=cs[i%cs.length];const x=Math.random()*128,y=Math.random()*128;for(let k=0;k<5;k++){g.beginPath();g.arc(x+Math.cos(k*1.26)*2.2,y+Math.sin(k*1.26)*2.2,1.5,0,7);g.fill();}}}));
+ const SL=o.sleeve?(o.sleeveT=='dots'?CM(o.sleeve,clothTex(id+'sl',o.sleeve,g=>{for(let i=0;i<50;i++){g.fillStyle=['#d84a4a','#5a7ac0','#e890a8'][i%3];g.beginPath();g.arc(Math.random()*128,Math.random()*128,2,0,7);g.fill();}})):SM(o.sleeve)):(o.vest?I:R);
+ const legs=[],arms=[],short=o.len=='short',hip=o.len=='hip',jk=o.jacket;
+ const pw=o.wpants||1;
+ for(const s of[-1,1]){const L=new THREE.Group();L.position.set(s*.085*wd,.88*tl,0);b.add(L);cyl(L,.06*pw,.05*(pw>1?pw*.8:1),.84*tl,Pm,0,-.42*tl,0,8);if(pw>1)cyl(L,.045,.05,.06,Pm,0,-.8*tl,0,8,0);bx(L,.12,.07,.24,shoe,0,-.85*tl,.04);legs.push(L);}
+ const sk=new THREE.Group();sk.position.y=1.02*tl;b.add(sk);let SKZ=d=>.16*wd;
+ // 下摆
+ if(hip){const ok=cyl(sk,.19*wd,.24*wd,.22,R,0,-.11,0,14);ok.scale.z=.8;}
+ else{const sl=short?.5:.92;
+  if(o.skirt||!short){const ik=cyl(sk,.17*wd,(o.female?.34:.3)*wd*(o.skirt?o.flare||1:1),sl*tl,o.skirt?Sk:I,0,-sl*tl/2-.02,0,18);ik.scale.z=.82;}
+  if(jk){const ok=cyl(sk,.19*wd,.24*wd,.16,R,0,-.08,0,14);ok.scale.z=.8;if(o.backPanel){const bp=cylP(sk,.2*wd,.3*wd,.62*tl,DSM(SM(o.backPanel)),0,-.31*tl,0,14,Math.PI*.6,Math.PI*.8);bp.scale.z=.84;}}
+  else if(o.open){SKZ=d=>(.195*wd+(.32*wd*(o.flare||1)*.95-.195*wd)*Math.min(1,d/(.86*tl)))*.82;const ok=cylP(sk,.195*wd,.32*wd*(o.flare||1)*.95,.86*tl,DSM(R),0,-.43*tl,0,16,Math.PI*.22,Math.PI*1.56);ok.scale.z=.82;}
+  else{const ol=short?.48:(o.skirt?.62:.86),_rb=(o.female?.3:.31)*wd*(o.flare||1)*.95;SKZ=d=>(.19*wd+(_rb-.19*wd)*Math.min(1,d/(ol*tl)))*.8;const ok=cyl(sk,.19*wd,(o.female?.3:.31)*wd*(o.flare||1)*.95,ol*tl,R,0,-ol*tl/2,0,16);ok.scale.z=.8;
+   if(o.tatter)for(let i=0;i<9;i++){const a=i/9*Math.PI*2,t=cone(sk,.05,.14,R,Math.sin(a)*.28*wd*(o.flare||1)*.95,-ol*tl-.05,Math.cos(a)*.23,4,0);t.rotation.x=Math.PI;}}}
+ if(o.apron){const ap=CM('#fff',clothTex('apron2','#f4eef0',g=>{g.save();g.translate(64,64);g.rotate(-.7);for(let x=-140;x<140;x+=22){g.fillStyle='#e8a0b8';g.fillRect(x,-140,8,280);g.fillStyle='#98b0e0';g.fillRect(x+11,-140,6,280);}g.restore();}));const a=bx(sk,.3*wd,.34,.02,ap,0,-.17,.2*wd,0);a.rotation.x=-.18;}
  // 躯干
- const tr=cyl(b,.2*wd,.16*wd,.46*tl,o.vest?I:R,0,1.25*tl,0,14);tr.scale.z=.7;
+ const tr=cyl(b,.2*wd,.16*wd,.46*tl,o.vest||o.open?I:R,0,1.25*tl,0,14);tr.scale.z=.7;
  if(o.vest){const v=cyl(b,.205*wd,.17*wd,.44*tl,R,0,1.26*tl,0,14,1);v.scale.z=.74;}
- // 交领：白色内领 + 外领缘
- for(const [m,dz,w] of [[I,.0,.07],[Tm,.012,.035]]){for(const s of[-1,1]){const c=bx(b,w,.36,.025,m,s*.035,1.3*tl,.15*Math.min(wd,1.2)+dz,0);c.rotation.z=s*.6;}}for(const s of[-1,1]){const cl=bx(b,.09,.07,.12,I,s*.05,1.47*tl,.08,0);cl.rotation.z=s*.5;}
- if(o.zig){for(let i=0;i<6;i++){const z=bx(b,.05,.05,.02,M('#f0ece2'),-.05+(i%2)*.03,1.42*tl-i*.05,.17,0);z.rotation.z=.8;}}
- // 腰带 + 蝴蝶结
- const sm=o.bee?CM('#fff',clothTex('bee','#d6b23a',g=>{for(let y=0;y<128;y+=20){g.fillStyle='#1a1610';g.fillRect(0,y,128,8);}})):SM(o.sash);
- const sa=cyl(b,.185*wd,.19*wd,o.bee?.2:.1,sm,0,1.03*tl,0,14,0);sa.scale.z=.76;
- if(o.bow){const bm=SM(o.sash);for(const s of[-1,1]){const l=sph(b,.06,bm,s*.07,1.04*tl,.17*wd,8,6,0);l.scale.set(1.3,.7,.5);const t=bx(b,.05,.36,.015,bm,s*.04,.84*tl,.17*wd,0);t.rotation.z=s*.12;}}
- if(o.bee){const ap=bx(b,.16,.5,.02,sm,0,.82*tl,.25*wd,0);}
- // 手臂：上臂 + 喇叭袖 + 内袖口
- const fl=o.flare||1;
- for(const s of[-1,1]){const A=new THREE.Group();A.position.set(s*.22*wd,1.4*tl,0);b.add(A);const up=cyl(A,.06,.07,.3,o.vest?I:R,0,-.15,0,8);
-  const sv=cyl(A,.075,.11*fl,.32,o.vest?I:R,0,-.4,0,10);sv.rotation.x=.08;cyl(A,.1*fl,.1*fl,.03,o.vest?I:Tm,0,-.565,0,10,0);sph(A,.045,S,0,-.62,0,8,6);arms.push(A);
-  if(o.vest){const sh2=sph(A,.085,R,0,-.02,0,8,6);sh2.scale.set(1,.7,1);}}
+ if(o.open){const v=cylP(b,.206*wd,.168*wd,.46*tl,DSM(R),0,1.25*tl,0,14,Math.PI*.18,Math.PI*1.64);v.scale.z=.74;}
+ const fz=.148*Math.min(wd,1.25),Ly=1.28*tl;
+ if(o.round){// 圆领 + 黄黑条
+  const rm=CM('#fff',clothTex('rnd',o.round,g=>{for(let x=0;x<128;x+=16){g.fillStyle='#1a1610';g.fillRect(x,0,6,128);}},128,128,0));const t=torus(b,.075,.022,rm,0,1.5*tl,.01);t.rotation.x=Math.PI/2;t.scale.y=.75;
+ }else{
+  const lp=o.lapel||{c:o.trim||'#2a2620',w:.035,tex:o.zig?'zig':null};const LM=lp.tex=='zig'?CM('#fff',zigTex()):SM(lp.c);
+  // 白内领（V）
+  for(const s of[-1,1]){const c=bx(b,.075,.2,.02,I,s*.032,1.42*tl,fz+.004,0);c.rotation.z=s*.55;}
+  // 外领缘：右衽长斜 + 短边
+  const band=(x0,y0,x1,y1,w,m,dz)=>{const dx=x1-x0,dy=y1-y0,l=Math.hypot(dx,dy);const q=bx(b,w,l,.022,m,(x0+x1)/2,(y0+y1)/2,fz+dz,0);q.rotation.z=Math.atan2(-dx,dy);return q;};
+  band(-.065,1.49*tl,.15*wd,1.06*tl,lp.w,LM,.012);band(.065,1.49*tl,.0,1.36*tl,lp.w,LM,.008);
+  // 后领
+  const bc=bx(b,.16,.05,.03,LM,0,1.47*tl,-.12,0);bc.rotation.x=.3;
+  if(o.open)for(const s of[-1,1]){const q=bx(b,lp.w,.86*tl,.02,LM,s*.13*wd,.6*tl,.22*wd*(o.flare||1),0);q.rotation.x=-.16;q.rotation.z=-s*.08;}
+ }
+ // 腰带
+ const SAm=sa0.tex=='bee'?CM('#fff',clothTex('bee',sa0.c,g=>{for(let x=0;x<128;x+=20){g.fillStyle='#1a1610';g.fillRect(x,0,7,128);}},128,128,0)):SM(sa0.c);
+ const sa=cyl(b,.188*wd,.19*wd,sa0.h||.1,SAm,0,1.03*tl,0,14,0);sa.scale.z=.76;
+ const sz=.16*wd;
+ if(sa0.knot=='bow'){for(const s of[-1,1]){const l=sph(b,.065,SAm,s*.07,1.05*tl,sz,8,6,0);l.scale.set(1.3,.7,.5);}sph(b,.03,SAm,0,1.04*tl,sz+.02,6,4,0);}
+ if(sa0.knot=='knot'){sph(b,.032,SAm,.06*wd,1.03*tl,sz+.01,6,4,0);}
+ if(sa0.ends){const ew=sa0.endsW||.05,L=sa0.ends;for(const s of sa0.endsW>.12?[0]:[-1,1]){const d0=.0,d1=L,z0=Math.max(sz,SKZ(d0))+.02,z1=SKZ(d1)+.02;const t=bx(b,ew,L,.015,SAm,(sa0.knot=='knot'?.06*wd:0)+s*.03,1.0*tl-L/2,(z0+z1)/2,0);t.rotation.z=s*.08;t.rotation.x=Math.atan2(z1-z0,L);}}
+ if(sa0.back=='bow'){for(const s of[-1,1]){const l=sph(b,.09,SAm,s*.09,1.06*tl,-sz,8,6,0);l.scale.set(1.3,.75,.45);const t=bx(b,.07,.5,.015,SAm,s*.05,.8*tl,-sz-.03,0);t.rotation.x=.12;}}
+ // 手臂
+ const fl=o.flare||1,CU=o.cuff=='zig'?CM('#fff',zigTex()):o.cuff?SM(o.cuff):(o.vest?I:Tm),SI=o.sleeveIn?(o.sleeveT=='bstripe'?CM('#fff',clothTex('bst',o.sleeveIn,g=>{for(let y=0;y<128;y+=16){g.fillStyle='#eef0f6';g.fillRect(0,y,128,6);}},128,128,0)):SM(o.sleeveIn)):null;
+ for(const s of[-1,1]){const A=new THREE.Group();A.position.set(s*.22*wd,1.4*tl,0);b.add(A);cyl(A,.06,.07,.3,jk?R:SL,0,-.15,0,8);
+  const sv=cyl(A,.075,.11*fl,.32,SL,0,-.4,0,10);sv.rotation.x=.08;cyl(A,.105*fl,.105*fl,.035,CU,0,-.565,0,10,0);if(SI)cyl(A,.06,.075,.08,SI,0,-.58,0,8,0);sph(A,.045,S,0,-.63,0,8,6);arms.push(A);
+  if(o.vest||jk){const sh2=sph(A,.085,R,0,-.02,0,8,6);sh2.scale.set(1.05,.75,1);if(jk){const sl2=cyl(A,.085,.1,.18,R,0,-.12,0,10);}}}
  // 颈、头
- cyl(b,.045,.05,.08,S,0,1.52*tl,0,8,0);const H=new THREE.Group();H.position.set(0,1.64*tl,0);H.scale.setScalar(.88);b.add(H);const hd=sph(H,.12,S,0,0,0,14,10);hd.scale.set(.95,1.12,1);
+ cyl(b,.045,.05,.08,S,0,1.52*tl,0,8,0);const H=new THREE.Group();H.position.set(0,1.64*tl,0);H.scale.setScalar(.88*(o.head||1));b.add(H);const F=o.face||{};const hd=sph(H,.12,S,0,0,0,14,10);hd.scale.set(F.round?1.12:.95,F.round?1.04:1.12,1);
  hair(H,o,hm);
- const ey=M('#141010');bx(H,.026,.012,.01,ey,.043,.012,.112,0);bx(H,.026,.012,.01,ey,-.043,.012,.112,0);bx(H,.032,.007,.01,M('#2a1c14'),.044,.042,.113,0);bx(H,.032,.007,.01,M('#2a1c14'),-.044,.042,.113,0);
- const u={b,H,arms,legs,hm,sk,ph:0,lx:null,lz:null,yaw:0,tool:null,id};if(o.x)o.x(u);root.userData=u;root.scale.setScalar(o.scale||1);return root;}
+ const ey=M('#141010'),bw=M('#2a1c14'),fzz=.112;
+ for(const s of[-1,1]){bx(H,.028,F.lash?.016:.013,.01,ey,s*.043,.012,fzz,0);sph(H,.006,M('#f4f0ea'),s*.038,.016,fzz+.005,4,3,0);const br=bx(H,.034,.008*(F.brow||1),.01,bw,s*.044,.044,fzz+.001,0);br.rotation.z=-s*.12;
+  if(F.blush){const bl=sph(H,.02,M('#e88a7a',{flatShading:false}),s*.06,-.025,.1,6,4,0);bl.scale.z=.3;}}
+ sph(H,.012,M('#b88a6c',{flatShading:false}),0,-.01,.12,5,4,0);
+ if(F.mouth=='grin'){bx(H,.05,.016,.01,M('#f4f0ea'),0,-.055,.112,0);bx(H,.056,.005,.01,M('#6a2a22'),0,-.064,.111,0);}else bx(H,.036,.006,.01,M('#8a3a30'),0,-.055,.113,0);
+ if(F.stub){const st=sph(H,.1,M('#5a4636',{flatShading:false,transparent:true,opacity:.35}),0,-.05,.03,10,6,0);st.scale.set(1,.55,.9);}
+ const u={b,H,arms,legs,hm,sk,ph:0,lx:null,lz:null,yaw:0,tool:null,id};if(o.x)o.x(u);root.userData=u;u.cid=id;root.scale.setScalar(o.scale||1);return root;}
 function dog(){const root=new THREE.Group(),b=new THREE.Group();root.add(b);const c=M('#6e5f4f'),d=M('#4a3f34');bx(b,.32,.3,.72,c,0,.48,0);const H=new THREE.Group();H.position.set(0,.66,.42);b.add(H);bx(H,.26,.24,.28,c,0,0,0);bx(H,.14,.12,.18,d,0,-.05,.18);for(const s of[-1,1])bx(H,.06,.12,.04,d,s*.09,.16,-.04).rotation.z=s*.3;
  const legs=[];for(const [x,z] of[[-.1,.25],[.1,.25],[-.1,-.25],[.1,-.25]]){const L=new THREE.Group();L.position.set(x,.36,z);b.add(L);bx(L,.08,.36,.08,d,0,-.18,0);legs.push(L);}const t=bx(b,.05,.05,.3,c,0,.6,-.45);t.rotation.x=-.6;
  root.userData={b,H,arms:[],legs,ph:0,lx:null,lz:null,yaw:0,dog:1};return root;}
@@ -4296,7 +4361,7 @@ function initGL(){if(!window.THREE)return;try{GL=new THREE.WebGLRenderer({canvas
  sun=new THREE.DirectionalLight('#ffd6a2',2.2);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);const sc=sun.shadow.camera;sc.left=-17;sc.right=17;sc.top=13;sc.bottom=-13;sc.near=1;sc.far=60;sun.shadow.bias=-.0006;sun.shadow.normalBias=.03;scene.add(sun);scene.add(sun.target);
  PL=[0,1,2].map(()=>{const l=new THREE.PointLight('#ffa860',0,12,1.6);scene.add(l);return l;});
  AG.inn=buildInn();AG.street=buildStreet();AG.hill=buildHill();AG.yard=buildYard();townExtras();for(const k in AG)scene.add(AG[k]);
- LINE=new THREE.Group();scene.add(LINE);['beggar','lady','qiao','mei','liu','ya','ma','wen','zhou','boss'].forEach((id,i)=>{const f=fig(id);f.position.set(15+(i-4.5)*.98,0,10.2-Math.abs(i-4.5)*.12);f.rotation.y=(i-4.5)*-.06;LINE.add(f);LINE['f_'+id]=f;});
+ LINE=new THREE.Group();scene.add(LINE);['beggar','lady','wen','mei','ya','liu','ma','qiao','zhou','yan'].forEach((id,i)=>{const f=fig(id);f.position.set(15+(i-4.5)*.98,0,10.2-Math.abs(i-4.5)*.12);f.rotation.y=(i-4.5)*-.06;LINE.add(f);LINE['f_'+id]=f;});
  // 挥勺刀光
  SLASH=new THREE.Group();scene.add(SLASH);const sm=new THREE.MeshBasicMaterial({color:'#ffe2a8',transparent:true,opacity:0,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,depthWrite:false});const sr=new THREE.Mesh(new THREE.RingGeometry(.55,1.45,20,1,-1.25,2.5),sm);sr.rotation.x=-Math.PI/2;SLASH.add(sr);SLASH.userData.m=sm;
  // 上菜高亮
@@ -4402,8 +4467,8 @@ function render3D(){if(!GL)return;townTick();const now=performance.now(),dt=Math
   camP.set(camT.x,camT.y+13.2,camT.z+12.6);
  }else{
   HL.visible=false;SLASH.userData.m.opacity=0;const t=now/1000;
-  if(mode=='cast'){const ids=['ma','qiao','liu','wen','ya','zhou'];LINE.children.forEach(f=>f.visible=false);ids.forEach((id,i)=>{const f=LINE['f_'+id];f.visible=true;f.position.set(15+(i-2.5)*1.28,0,10);f.rotation.y=Math.sin(t*.6+i)*.12;});camT.set(15,1.05,10);camP.set(15,2.2,18.4);}
-  else{const ids=['beggar','lady','qiao','mei','liu','ya','ma','wen','zhou','boss'];ids.forEach((id,i)=>{const f=LINE['f_'+id];f.visible=true;f.position.set(15+(i-4.5)*.98,0,10.2-Math.abs(i-4.5)*.12);f.rotation.y=(i-4.5)*-.06+Math.sin(t*.5+i)*.06;});
+  if(mode=='cast'){const ids=['beggar','lady','wen','mei','ya','liu','ma','qiao','zhou','yan'];LINE.children.forEach(f=>f.visible=false);ids.forEach((id,i)=>{const f=LINE['f_'+id];f.visible=true;f.position.set(15+(i-4.5)*.98,0,10);f.rotation.y=Math.sin(t*.6+i)*.12;});camT.set(15,1.05,10);camP.set(15,2.0,19.6);}
+  else{const ids=['beggar','lady','wen','mei','ya','liu','ma','qiao','zhou','yan'];LINE.children.forEach(f=>f.visible=false);ids.forEach((id,i)=>{const f=LINE['f_'+id];f.visible=true;f.position.set(15+(i-4.5)*.98,0,10.2-Math.abs(i-4.5)*.12);f.rotation.y=(i-4.5)*-.06+Math.sin(t*.5+i)*.06;});
    const a=Math.sin(t*.12)*.22;camT.set(15,1.9,9.6);camP.set(15+Math.sin(a)*8.5,2.3,9.6+Math.cos(a)*8.5);}
   LINE.children.forEach((f,i)=>{f.userData.b.position.y=Math.sin(t*1.6+i)*.006;f.userData.H.rotation.y=Math.sin(t*.7+i*1.7)*.18;});
  }
@@ -4468,18 +4533,18 @@ function loop(){let ran=false;if(!paused){if(HS>0){HS--;}else{update();ran=true;
 window.__game={get mode(){return mode},set mode(v){mode=v},get ph(){return ph},set ph(v){ph=v},get EP(){return EP},get area(){return area},get ents(){return ents},get items(){return items},get dlg(){return dlg},set dlg(v){dlg=v},get carry(){return carry},get order(){return order},get served(){return served},P,TB,startEP,enter,onEnter,talk,get paused(){return paused},get GL(){return GL}};
 loop();
 </script><script>
-// ================= 乔不留 · 盗圣传（第六至十回）=================
+// ================= 白展堂 · 盗圣传（第六至十回）=================
 let CH='ma',LV=0,DSEL=0,LSEL=0,CSEL=1,TAPQ=null,QF=null,DS={},DET=0,ST=100,HIDE=false,LOOT=[],PJ=[],CUT=null,REASON='',QUIP='';
 const DSAVE='tongnan_dao_v1';
 function dUnl(){try{return Math.min(4,+(localStorage.getItem(DSAVE)||0))}catch(e){return 0}}
 function dSetUnl(n){try{if(n>dUnl())localStorage.setItem(DSAVE,String(Math.min(4,n)))}catch(e){}}
 const DAREA=['wangfu','palace','roofs','arena','qianfu'];
 const DLV=[
- {t:'第六回 · 夜盗玉麒麟',s:'潜入王府',d:'躲开灯笼，偷走镇宅之宝',gag:'王爷：“字条上写的啥？” 侍卫：“乔不留。” 王爷：“他留下啥了？” 侍卫：“啥也没留。”',moral:'偷东西要轻，做人要稳——乔不留那时只学会了前一半。'},
+ {t:'第六回 · 夜盗玉麒麟',s:'潜入王府',d:'躲开灯笼，偷走镇宅之宝',gag:'王爷：“字条上写的啥？” 侍卫：“白展堂。” 王爷：“他留下啥了？” 侍卫：“啥也没留。”',moral:'偷东西要轻，做人要稳——白展堂那时只学会了前一半。'},
  {t:'第七回 · 御膳房打包',s:'潜入皇宫',d:'从太监眼皮底下偷三道御膳',gag:'御膳太监：“启禀皇上，今晚的菜被人打包了……还留了张字条：‘咸了’。”',moral:'天下美食，偷来的最香；可一个人吃，嘴里总空落落的。'},
- {t:'第八回 · 屋脊争锋',s:'轻功大会',d:'屋顶赛跑，躲乌鸦、躲刺猬',gag:'草上飞：“他踩我脸借力！” 乔不留：“那叫借力打力，江湖规矩。”',moral:'名号是别人给的，脚下的瓦是自己一片片踩的。'},
- {t:'第九回 · 鸡王争霸',s:'举办斗鸡大赛',d:'维持秩序，看准时机给鸡加油',gag:'乔不留：“盗圣也得有个正经营生——比如斗鸡。……这算正经吗？”',moral:'场子乱不乱，不看鸡，看人。'},
- {t:'第十回 · 救柳二丫',s:'夜闯钱府',d:'钱夫人绑了二丫，打进去救人',gag:'二丫：“谁说要你救了！……下回早点来。”',moral:'偷遍天下的一双手，最后只想牵住一个人。'}];
+ {t:'第八回 · 屋脊争锋',s:'轻功大会',d:'屋顶赛跑，躲乌鸦、躲刺猬',gag:'草上飞：“他踩我脸借力！” 白展堂：“那叫借力打力，江湖规矩。”',moral:'名号是别人给的，脚下的瓦是自己一片片踩的。'},
+ {t:'第九回 · 鸡王争霸',s:'举办斗鸡大赛',d:'维持秩序，看准时机给鸡加油',gag:'白展堂：“盗圣也得有个正经营生——比如斗鸡。……这算正经吗？”',moral:'场子乱不乱，不看鸡，看人。'},
+ {t:'第十回 · 救佟掌柜',s:'夜闯钱府',d:'钱夫人绑了佟掌柜，打进去救人',gag:'佟掌柜：“谁说要你救了！……下回早点来。”',moral:'偷遍天下的一双手，最后只想牵住一个人。'}];
 
 // ---------- 地图 ----------
 const ARC=[];for(let i=0;i<15;i++){const a=-Math.PI+i/14*Math.PI;ARC.push([15+Math.cos(a)*4.7,9+Math.sin(a)*4.1,a]);}
@@ -4640,7 +4705,7 @@ let KHC=0;
 function kuihua(){P.lunge=16;P.ktx=60;P.cd=24;dWhoosh();if(KHC<=0){dVoice();KHC=150;}}
 function dLose(r,q){if(mode=='over')return;REASON=r;QUIP=q||'';mode='over';dlg=null;CUT=null;sfx('bad');FL=.4;FLC='#c02818';TRA=.6;}
 function dWin(){dSetUnl(LV+1);mode='drecap';sfx('stage');}
-const QN='乔不留';
+const QN='白展堂';
 function dStart(n){CH='dao';LV=n;mode='play';dlg=null;ents=[];items=[];shots=[];parts=[];floats=[];carry=0;P.max=10;P.hp=10;P.inv=0;P.dash=0;P.dcd=0;P.jt=0;P.jz=0;P.fall=0;P.lunge=0;P.ktx=0;P.stun=0;P.swing=0;P.cd=0;P.kx=P.ky=0;
  DET=0;ST=100;HIDE=false;PJ=[];LOOT=[];CUT=null;REASON='';DS={};toastT=0;area=DAREA[n];NPCS[area]=[];P.dir={x:0,y:-1};if(DG){DG.clear();}
  for(const k of FIGS.keys())if(typeof k=='object'){scene.remove(FIGS.get(k));FIGS.delete(k);}LS[n].init();note(DLV[n].t);sfx('stage');}
@@ -4671,7 +4736,7 @@ function dUpdate(){tick++;for(const e of ents){if(e.g&&e.frz>0)e.frz=e.stun;}for
   if((hit('KeyJ')||hit('Space'))&&P.cd<=0&&P.stun<=0&&!(P.lunge>0)){P.cd=42;P.swing=12;kuihua();}
   if(DS.roof&&!P.fall&&P.jt<=0&&tileAt(P.x,P.y)=='g'){P.fall=1;sfx('bad');}}
  if(mode=='play')L.upd();
- if(P.hp<=0&&mode!='over')dLose('气血耗尽','乔不留：“我……我只是腿软，不是认输。”');}
+ if(P.hp<=0&&mode!='over')dLose('气血耗尽','白展堂：“我……我只是腿软，不是认输。”');}
 
 // ---------- 五回 ----------
 const LS=[];
@@ -4680,24 +4745,24 @@ const KH=(d,t)=>KT(d,t);
 LS[0]={init(){P.x=2.5*T;P.y=17.5*T;DS.stealth=1;
   G('guard',[[14.5,11.6]],{base:Math.PI/2});G('guard',[[10,13],[22,13],[22,17],[10,17]]);G('guard',[[2,7],[12,7]]);G('guard',[[17,7],[27,7]]);G('guard',[[9,5.6],[20,5.6]]);
   LOOT=[{k:'qilin',x:15*T,y:4.5*T,n:'玉麒麟'},{k:'exit',x:27.5*T,y:17.5*T,n:'翻墙处',off:1}];
-  say(QN,['（蹲在王府墙头）在下乔不留，江湖人称……暂时还没人称。','今晚，我要偷走王府的镇宅之宝——玉麒麟。','偷到了，江湖就得给我起个外号；偷不到，王爷就得给我起个牢号。'],()=>say(QN,[KH('摇杆/WASD 走 · Q 屏息潜行 · J 背后点穴 · L 轻功跃过矮墙 · K 闪身 · E 拿东西','摇杆 走 ·「隐」屏息潜行 ·「点」背后点穴 ·「跃」轻功跳矮墙 ·「闪」闪身 ·「谈」拿东西'),'别在灯笼光里站太久——警觉满了，就得吃牢饭。']));},
+  say(QN,['（蹲在王府墙头）在下白展堂，江湖人称……暂时还没人称。','今晚，我要偷走王府的镇宅之宝——玉麒麟。','偷到了，江湖就得给我起个外号；偷不到，王爷就得给我起个牢号。'],()=>say(QN,[KH('摇杆/WASD 走 · Q 屏息潜行 · J 背后点穴 · L 轻功跃过矮墙 · K 闪身 · E 拿东西','摇杆 走 ·「隐」屏息潜行 ·「点」背后点穴 ·「跃」轻功跳矮墙 ·「闪」闪身 ·「谈」拿东西'),'别在灯笼光里站太久——警觉满了，就得吃牢饭。']));},
  obj(){return DS.got?'带着玉麒麟，从东南角翻墙出去':'潜入银安殿前，偷走玉麒麟';},
  upd(){guardsUpd();const q=LOOT[0],ex=LOOT[1];
   if(!DS.got&&hit('KeyE')&&Math.hypot(q.x-P.x,q.y-P.y)<62){DS.got=1;DS.carry=1;q.carried=1;ex.off=0;sfx('dish');say(QN,['（双手捧起）好沉……这成色，够我吃三辈子包子。','（殿里传来王爷的梦话）“谁……谁动我麒麟……”','……王爷，您接着睡。'],()=>{DS.alert=1.3;ents.forEach(e=>{if(e.g)e.range*=1.12;});G('guard',[[24,15],[24,11.8]]);G('guard',[[4,15],[12,15]]);note('侍卫换岗，加派了人手！');});}
-  if(DS.got&&!DS.done&&Math.hypot(ex.x-P.x,ex.y-P.y)<44){DS.done=1;say(QN,['（翻上墙头）王府，后会无期！','第二天，满城贴出告示：“玉麒麟失窃，贼人只留下一张字条——”','“乔不留到此一游。”……偷完，不留。我这名字，就是这么响起来的。'],dWin);}
-  if(DET>=100)dLose('被王府侍卫发现了！','侍卫：“抓到个蹲墙角的！” 乔不留：“我在……练蹲马步。”');}};
+  if(DS.got&&!DS.done&&Math.hypot(ex.x-P.x,ex.y-P.y)<44){DS.done=1;say(QN,['（翻上墙头）王府，后会无期！','第二天，满城贴出告示：“玉麒麟失窃，贼人只留下一张字条——”','“白展堂到此一游。”……偷完，不留。我这名字，就是这么响起来的。'],dWin);}
+  if(DET>=100)dLose('被王府侍卫发现了！','侍卫：“抓到个蹲墙角的！” 白展堂：“我在……练蹲马步。”');}};
 // 第七回 皇宫
 LS[1]={init(){P.x=15*T;P.y=18*T;DS.stealth=1;DS.n=0;
   G('eunuch',[[3,10],[12,10]]);G('eunuch',[[18,10],[27,10]]);G('eunuch',[[10,13.5],[19,13.5],[19,15.5],[10,15.5]]);
   G('pguard',[[2,5],[11,5]]);G('pguard',[[18,5],[27,5]]);G('pguard',[[14.5,8.4]],{base:Math.PI/2});
   LOOT=[{k:'dish',n:'佛跳墙',x:5*T,y:6.5*T,c:'#a8642a'},{k:'dish',n:'烤全鸭',x:15*T,y:11.5*T,c:'#b8582a'},{k:'dish',n:'桂花糕',x:24*T,y:6.5*T,c:'#e8d080'},{k:'exit',x:15*T,y:18.3*T,n:'御花园狗洞',off:1}];
-  say(QN,['玉麒麟一出手，江湖人却说：“偷王府算什么？有本事偷皇上的晚饭！”','听说御膳房今晚做“佛跳墙”——佛都跳墙了，我乔不留跳个宫墙怎么了？','三道菜：佛跳墙、烤全鸭、桂花糕。偷完从狗洞溜回去。'],()=>say(QN,[KH('桌子、水缸后面屏息（Q），太监就看不见你。','躲在桌子、水缸后面按「隐」，太监就看不见你。')]));},
+  say(QN,['玉麒麟一出手，江湖人却说：“偷王府算什么？有本事偷皇上的晚饭！”','听说御膳房今晚做“佛跳墙”——佛都跳墙了，我白展堂跳个宫墙怎么了？','三道菜：佛跳墙、烤全鸭、桂花糕。偷完从狗洞溜回去。'],()=>say(QN,[KH('桌子、水缸后面屏息（Q），太监就看不见你。','躲在桌子、水缸后面按「隐」，太监就看不见你。')]));},
  obj(){return DS.n<3?'偷御膳 '+DS.n+'/3（佛跳墙 · 烤全鸭 · 桂花糕）':'抱着御膳，从南边狗洞溜走';},
  upd(){guardsUpd();
   if(hit('KeyE'))for(const it of LOOT){if(it.k!='dish'||it.got)continue;if(Math.hypot(it.x-P.x,it.y-P.y)<64){it.got=1;DS.n++;sfx('dish');floats.push({x:P.x,y:P.y,s:'+'+it.n,l:60});
     const ln={'佛跳墙':['（闻一口）佛跳墙……难怪佛要跳，我也想跳进锅里。'],'烤全鸭':['烤鸭……以后要是有个黑鸭帮，知道我偷了它们亲戚，非打上门来不可。'],'桂花糕':['御制桂花糕！先揣着……给以后认识的姑娘留一块。']}[it.n];
     say(QN,ln,()=>{if(DS.n==2){G('eunuch',[[12,12],[17,12]],{nm:'太监总管',range:175,half:.6});say('太监总管',['（尖声）谁在御膳房吧唧嘴？！都给咱家精神点！'],()=>note('太监总管来巡夜了'));}if(DS.n==3){LOOT[3].off=0;DS.carry=1;note('三道菜到手，原路溜！');}});break;}}
-  const ex=LOOT[3];if(DS.n>=3&&!DS.done&&Math.hypot(ex.x-P.x,ex.y-P.y)<46){DS.done=1;say(QN,['（钻出狗洞）佛跳墙我跳墙，烤鸭我打包。','第二天皇上上朝：“朕的晚膳呢？”','太监：“回皇上……被一个叫乔不留的，打包了。还留了张字条：‘咸了’。”'],dWin);}
+  const ex=LOOT[3];if(DS.n>=3&&!DS.done&&Math.hypot(ex.x-P.x,ex.y-P.y)<46){DS.done=1;say(QN,['（钻出狗洞）佛跳墙我跳墙，烤鸭我打包。','第二天皇上上朝：“朕的晚膳呢？”','太监：“回皇上……被一个叫白展堂的，打包了。还留了张字条：‘咸了’。”'],dWin);}
   if(DET>=100)dLose('被太监发现了！','太监：“抓刺客——不对，抓吃客！”');}};
 // 第八回 轻功大会
 const RCP=[[3.5,15.5],[11,15.5],[18,15.5],[25.5,15.5],[25.5,5],[18,4.5],[11,4.5],[3.5,4.5]];
@@ -4705,7 +4770,7 @@ const rprog=(cp,x,y)=>cp>=RCP.length?1e6:cp*10000-Math.hypot(RCP[cp][0]*T-x,RCP[
 LS[2]={init(){P.x=3*T;P.y=16.7*T;DS.roof=1;DS.cp=1;DS.go=0;DS.last=[3*T,16.7*T];DS.crow=150;NPCS.roofs=[{id:'elder',x:3,y:2.2,name:'盗门长老'}];
   ['草上飞','一阵风','踏雪无痕'].forEach((nm,i)=>ents.push({t:'rt'+i,nm,x:(2.2+i*1.1)*T,y:14.3*T,r:11,hp:1,max:1,area,cp:1,sp:[2.0,2.13,2.26][i],jz:0,stun:0,rival:1,noHit:1,ang:0}));
   [[10.5,13.6,10.5,17.6],[23.6,9.5,27.6,9.5],[10.5,2.6,10.5,6.6]].forEach(([a,b,c,d],i)=>ents.push({t:'hog',nm:'刺猬',x:a*T,y:b*T,ax:a*T,ay:b*T,bx:c*T,by:d*T,u:i*.3,dir:1,r:13,hp:1,max:1,area,tm:i*50,stun:0,ang:0}));
-  say('盗门长老',['十年一度，盗门轻功大会！谁先从这片屋脊跑一圈、踩到老夫脚下，谁就是——','盗圣！'],()=>say('草上飞',['乔不留？偷了个玉麒麟就来凑热闹？屋顶可不是王府的墙头。'],()=>say(QN,['（压压帽子）我不跟你比嘴，比腿。',KH('L 轻功跃过屋缝，K 闪身躲开，J 点穴能让刺猬缩成球。乌鸦俯冲前地上有黑影——快躲！','「跃」跨过屋缝，「闪」躲攻击，「点」让刺猬缩成球。地上出现黑影，就是乌鸦要扑下来了！')],()=>{CUT={t:0,f:t=>{if(t>=180){CUT=null;DS.go=1;sfx('stage');note('跑！');}}};})));},
+  say('盗门长老',['十年一度，盗门轻功大会！谁先从这片屋脊跑一圈、踩到老夫脚下，谁就是——','盗圣！'],()=>say('草上飞',['白展堂？偷了个玉麒麟就来凑热闹？屋顶可不是王府的墙头。'],()=>say(QN,['（压压帽子）我不跟你比嘴，比腿。',KH('L 轻功跃过屋缝，K 闪身躲开，J 点穴能让刺猬缩成球。乌鸦俯冲前地上有黑影——快躲！','「跃」跨过屋缝，「闪」躲攻击，「点」让刺猬缩成球。地上出现黑影，就是乌鸦要扑下来了！')],()=>{CUT={t:0,f:t=>{if(t>=180){CUT=null;DS.go=1;sfx('stage');note('跑！');}}};})));},
  obj(){if(DS.won)return '盗圣加冕！';if(!DS.go)return '准备起跑';const me=rprog(DS.cp,P.x,P.y);const rk=1+ents.filter(e=>e.rival&&rprog(e.cp,e.x,e.y)>me).length;DS.rank=rk;return '沿着旗子跑一圈 '+Math.min(DS.cp-1,7)+'/7 · 第'+'一二三四'[rk-1]+'名';},
  onHit(e,nx,ny){if(e.t=='hog'){if(e.stun<=0){e.stun=240;e.frz=240;floats.push({x:e.x,y:e.y,s:'定成球了',l:50});sfx('hit');HS=3;fxQ.push({x:e.x,y:e.y,l:10,s:1});}return true;}
   if(e.t=='crow'){if(e.h<1.6){e.hp=0;floats.push({x:e.x,y:e.y,s:'啪！',l:40});sfx('hit');HS=3;fxQ.push({x:e.x,y:e.y,l:10,s:1});}return true;}return false;},
@@ -4726,13 +4791,13 @@ LS[2]={init(){P.x=3*T;P.y=16.7*T;DS.roof=1;DS.cp=1;DS.go=0;DS.last=[3*T,16.7*T];
   ents=ents.filter(e=>e.hp>0);
   if(--DS.crow<=0){DS.crow=100+Math.random()*60;const rv=ents.filter(e=>e.rival&&!e.done);const vic=Math.random()<.68||!rv.length?P:rv[(Math.random()*rv.length)|0];ents.push({t:'crow',x:vic.x,y:vic.y,tx:vic.x+(vic===P?P.dir.x*30:0),ty:vic.y+(vic===P?P.dir.y*30:0),vic,r:10,hp:1,max:1,area,st:'tel',tm:0,h:4.6,ang:0});}},
  finish(){DS.won=1;DS.go=0;sfx('stage');ents=ents.filter(e=>e.rival);ents.forEach((e,i)=>{e.x=(1.8+i*1.4)*T;e.y=6.4*T;e.ang=-Math.PI/2;e.jz=0;});P.x=3.5*T;P.y=4.6*T;P.dir={x:0,y:1};DS.cere=1;FL=.5;FLC='#fff0c0';TRA=.4;
-  CUT={t:0,f:t=>{if(t==70){CUT=null;say('盗门长老',['本届盗门轻功大会魁首——乔不留！','自今日起，江湖尊你一声：盗！圣！'],()=>say('草上飞',['他刚才踩我脸借力！'],()=>say(QN,['那叫借力打力，江湖规矩。','（抱拳）各位承让。以后谁家丢了东西，先别怀疑我——我是圣人。'],dWin)));}}};}};
+  CUT={t:0,f:t=>{if(t==70){CUT=null;say('盗门长老',['本届盗门轻功大会魁首——白展堂！','自今日起，江湖尊你一声：盗！圣！'],()=>say('草上飞',['他刚才踩我脸借力！'],()=>say(QN,['那叫借力打力，江湖规矩。','（抱拳）各位承让。以后谁家丢了东西，先别怀疑我——我是圣人。'],dWin)));}}};}};
 // 第九回 鸡王争霸
-const RR=[{nm:'铁冠大将军',t:'roo0',oh:3,v:.016,w:.25,who:'赌徒',ln:['我这铁冠大将军，一顿吃三斤米！','乔不留：“我这只一顿吃三斤……你那只。”']},
- {nm:'黑旋风',t:'roo1',oh:4,v:.021,w:.2,who:'赌徒',ln:['我家黑旋风练过轻功，能飞上房！','乔不留：“巧了，主持人我也练过。”']},
+const RR=[{nm:'铁冠大将军',t:'roo0',oh:3,v:.016,w:.25,who:'赌徒',ln:['我这铁冠大将军，一顿吃三斤米！','白展堂：“我这只一顿吃三斤……你那只。”']},
+ {nm:'黑旋风',t:'roo1',oh:4,v:.021,w:.2,who:'赌徒',ln:['我家黑旋风练过轻功，能飞上房！','白展堂：“巧了，主持人我也练过。”']},
  {nm:'金距鸡王',t:'roo2',oh:5,v:.027,w:.15,who:'钱夫人',ln:['（摇着金扇）金距鸡王，西域进贡，爪子上镶的是真金。','它要是输了，我包下整个葫芦镇的米；它要是赢了——它不会输。']}];
-LS[3]={init(){P.x=15*T;P.y=14.5*T;DS.r=0;DS.ph='intro';DS.chaos=0;NPCS.arena=[{id:'ya',x:9,y:14.4},{id:'elder',x:21,y:14.4,name:'盗门长老'}];
-  say(QN,['成了盗圣，长老说：“盗圣要服众，得替江湖办件正经事。”','于是我在葫芦镇办了第一届——鸡王争霸赛！门票三文，瓜子另算。'],()=>say('柳二丫',['（挤在人群里）喂！主持的！你要是敢让场子乱了，我替你维持秩序——用剑。'],()=>say(QN,['（擦汗）姑娘别急……我自己来。',KH('赌急了的人会往场子里冲，J 点穴让他们消停。斗鸡时看准光标落进金框按 J 喝彩！','赌急了的人会往场子里冲，用「点」让他们消停。斗鸡时光标落进金框，按「点」喝彩！')],()=>this.order())));},
+LS[3]={init(){P.x=15*T;P.y=14.5*T;DS.r=0;DS.ph='intro';DS.chaos=0;NPCS.arena=[{id:'liu',x:9,y:14.4},{id:'elder',x:21,y:14.4,name:'盗门长老'}];
+  say(QN,['成了盗圣，长老说：“盗圣要服众，得替江湖办件正经事。”','于是我在葫芦镇办了第一届——鸡王争霸赛！门票三文，瓜子另算。'],()=>say('佟掌柜',['（挤在人群里）喂！主持的！你要是敢让场子乱了，我替你维持秩序——用剑。'],()=>say(QN,['（擦汗）姑娘别急……我自己来。',KH('赌急了的人会往场子里冲，J 点穴让他们消停。斗鸡时看准光标落进金框按 J 喝彩！','赌急了的人会往场子里冲，用「点」让他们消停。斗鸡时光标落进金框，按「点」喝彩！')],()=>this.order())));},
  order(){DS.ph='order';DS.spawn=3+DS.r;DS.st=40;DS.chaos=0;note('第'+'一二三'[DS.r]+'场 · 先维持秩序！');},
  obj(){const r='第'+'一二三'[Math.min(DS.r,2)]+'/3场 · ';if(DS.ph=='order')return r+'别让赌徒冲进场子 · 乱 '+DS.chaos+'/3';if(DS.ph=='fight')return r+'光标进金框时喝彩！（'+KT('J','点')+'）';return r+'鸡王争霸';},
  onHit(e){if(e.t=='gamb'&&!e.calm){e.calm=1;e.ct=80;floats.push({x:e.x,y:e.y,s:['消停点！','坐下！','瓜子拿好！'][(Math.random()*3)|0],l:50});sfx('hit');HS=3;fxQ.push({x:e.x,y:e.y,l:10,s:1});return true;}return true;},
@@ -4745,7 +4810,7 @@ LS[3]={init(){P.x=15*T;P.y=14.5*T;DS.r=0;DS.ph='intro';DS.chaos=0;NPCS.arena=[{i
   if(win){F.oh--;floats.push({x:b.x,y:b.y,s:'好！',l:40});}else F.mh--;F.zc=.2+Math.random()*.6;
   if(F.oh<=0){DS.ph='post';ents=ents.filter(e=>!e.roo||e===F.me);sfx('coin');const r=DS.r;DS.r++;
    if(r<2)say(QN,[['铁冠大将军，掉冠了！第一场——我们赢！','黑旋风……旋风变成了微风！第二场也拿下！'][r]],()=>{ents=[];this.order();});
-   else{NPCS.arena.push({id:'qian',x:19,y:13.4,name:'钱夫人'});say('钱夫人',['（金扇啪地合上）乔不留！你敢让我的鸡王输？','好……我记住你了。还有你身边那个穿红坎肩的丫头！'],()=>say('柳二丫',['看什么看？再看把你的鸡炖了！'],()=>say(QN,['（擦汗）二丫姑娘……求你少说两句。','第一届鸡王争霸，圆满落幕。可我总觉得，钱夫人那一眼——不太对劲。'],dWin)));}}
+   else{NPCS.arena.push({id:'qian',x:19,y:13.4,name:'钱夫人'});say('钱夫人',['（金扇啪地合上）白展堂！你敢让我的鸡王输？','好……我记住你了。还有你身边那个穿红褂子的女掌柜！'],()=>say('佟掌柜',['看什么看？再看把你的鸡炖了！'],()=>say(QN,['（擦汗）佟掌柜姑娘……求你少说两句。','第一届鸡王争霸，圆满落幕。可我总觉得，钱夫人那一眼——不太对劲。'],dWin)));}}
   else if(F.mh<=0)dLose('咱的鸡输了！',DS.mine=='w'?'白羽：“咯……”（倒地装死）':'芦花：“咯咯！”（转身就跑）');},
  fight(){DS.ph='fight';const R=RR[DS.r];ents=ents.filter(e=>e.calm);P.x=15*T;P.y=13.7*T;P.dir={x:0,y:-1};
   const me={t:DS.mine=='w'?'roo_w':'roo_b',nm:DS.mine=='w'?'白羽':'芦花',x:13.6*T,y:9*T,r:10,hp:1,max:1,area,noHit:1,roo:1,ang:0,lg:0},op={t:R.t,nm:R.nm,x:16.4*T,y:9*T,r:10,hp:1,max:1,area,noHit:1,roo:1,ang:Math.PI,lg:0};ents.push(me,op);
@@ -4758,22 +4823,22 @@ LS[3]={init(){P.x=15*T;P.y=14.5*T;DS.r=0;DS.ph='intro';DS.chaos=0;NPCS.arena=[{i
     const go=()=>say(R.who,R.ln,()=>{note('开斗！');this.fight();});
     if(DS.r==0)say(QN,['秩序好了！参赛的鸡……主办方也得出一只，不然没人信这比赛公平。'],null,[['白羽：吃得多，喊一声就上',()=>{DS.mine='w';}],['芦花：脾气大，挨得住啄',()=>{DS.mine='b';}]]),dlg.after=go;
     else{if(DS.r==2){NPCS.arena.push({id:'qian',x:19,y:13.4,name:'钱夫人'});}go();}}}}};
-// 第十回 救柳二丫
+// 第十回 救佟掌柜
 LS[4]={init(){P.x=2.5*T;P.y=17.5*T;DS.stealth=1;DS.permKO=1;
   G('hench',[[4,15],[14,15]]);G('hench',[[16,12],[27,12],[27,16],[16,16]]);G('hench',[[11,7],[18,7]]);G('hench',[[21,6.6],[27,6.6]]);G('hench',[[14.5,10.6]],{base:Math.PI/2});
   G('steward',[[2,7],[8,7]],{onKO:()=>{if(!DS.key){DS.key=1;sfx('coin');note('从管家腰上摸到一把铜钥匙！');}}});
   LOOT=[{k:'door',x:26.5*T,y:5.6*T,n:'柴房'}];
-  say('同难客栈伙计',['不好了！柳二丫被钱夫人的人绑走了！说是……鸡王的仇！'],()=>say(QN,['（把毛巾往肩上一甩）为了一只鸡，绑一个姑娘？','钱夫人，你惹错人了。我乔不留偷东西从不留痕——这回，我来偷人。',KH('打手被点倒就起不来了。被发现会群起围攻。管家身上有柴房钥匙。','打手被「点」倒就起不来了。被发现会群起围攻。管家身上有柴房钥匙。')]));},
- obj(){if(DS.boss){const b=DS.boss;return b.ko?'救出柳二丫':'打败钱夫人！（二丫会帮你扔板凳）';}if(DS.alarm)return '被发现了！把围上来的打手都点倒';return DS.key?'用钥匙打开东北角的柴房':'摸到管家（西边）身后，点穴拿钥匙';},
+  say('同难客栈伙计',['不好了！佟掌柜被钱夫人的人绑走了！说是……鸡王的仇！'],()=>say(QN,['（把毛巾往肩上一甩）为了一只鸡，绑我们掌柜的？','钱夫人，你惹错人了。我白展堂偷东西从不留痕——这回，我来偷人。',KH('打手被点倒就起不来了。被发现会群起围攻。管家身上有柴房钥匙。','打手被「点」倒就起不来了。被发现会群起围攻。管家身上有柴房钥匙。')]));},
+ obj(){if(DS.boss){const b=DS.boss;return b.ko?'救出佟掌柜':'打败钱夫人！（佟掌柜会帮你扔板凳）';}if(DS.alarm)return '被发现了！把围上来的打手都点倒';return DS.key?'用钥匙打开东北角的柴房':'摸到管家（西边）身后，点穴拿钥匙';},
  upd(){if(!DS.boss)guardsUpd();
   if(DET>=100&&!DS.alarm){DS.alarm=1;DET=0;sfx('bad');TRA=.5;note('钱府打手：“有刺客！”');for(const e of ents)if(e.g&&!e.ko){e.chase=1;e.hp=2;e.max=2;}}
   if(DS.alarm&&!ents.some(e=>e.chase&&!e.ko)){DS.alarm=0;note('暂时安全了……');}
   if(DS.alarm&&!DS.boss)for(const e of ents)if(e.chase&&!e.ko&&e.hp>0){}
-  const dr=LOOT[0];if(!DS.open&&hit('KeyE')&&Math.hypot(dr.x-P.x,dr.y-P.y)<54){if(!DS.key){note('门锁着。钥匙……多半在管家身上。');sfx('bad');}else{DS.open=1;dr.off=1;sfx('dish');NPCS.qianfu=[{id:'ya',x:26,y:6.2}];
-    say('柳二丫',['（被绑在柴堆上）唔唔唔！……呸！你谁啊？','哦，是那个主持斗鸡的。'],()=>say(QN,['救你的人。'],()=>say('柳二丫',['救我？我正准备自己咬断绳子！……这绳子挺硬的，你来吧。'],()=>say('钱夫人',['（金扇一展）好一个盗圣，偷到我钱府来了？','来人！给我把这对狗男女——',],()=>say('柳二丫',['谁跟他是一对！'],()=>{this.boss();})))));}}
+  const dr=LOOT[0];if(!DS.open&&hit('KeyE')&&Math.hypot(dr.x-P.x,dr.y-P.y)<54){if(!DS.key){note('门锁着。钥匙……多半在管家身上。');sfx('bad');}else{DS.open=1;dr.off=1;sfx('dish');NPCS.qianfu=[{id:'liu',x:26,y:6.2}];
+    say('佟掌柜',['（被绑在柴堆上）唔唔唔！……呸！你谁啊？','哦，是那个主持斗鸡的。'],()=>say(QN,['救你的人。'],()=>say('佟掌柜',['救我？我正准备自己咬断绳子！……这绳子挺硬的，你来吧。'],()=>say('钱夫人',['（金扇一展）好一个盗圣，偷到我钱府来了？','来人！给我把这对狗男女——',],()=>say('佟掌柜',['谁跟他是一对！'],()=>{this.boss();})))));}}
   const b=DS.boss;if(b&&!b.ko){this.bossUpd(b);}
   for(const p of PJ){p.x+=p.vx;p.y+=p.vy;p.l--;if(eSolid(p.x,p.y)&&tileAt(p.x,p.y)!='L')p.l=0;if(p.l>0&&Math.hypot(p.x-P.x,p.y-P.y)<15&&P.jz<.6){p.l=0;hurtP(1,p.vx/3,p.vy/3);}}PJ=PJ.filter(p=>p.l>0);
-  if(b&&!b.ko&&DS.boss&&DS.ally!=null&&--DS.ally<=0){DS.ally=300;if(b.hp>1){b.hp--;floats.push({x:b.x,y:b.y,s:'二丫：板凳！',l:60});fxQ.push({x:b.x,y:b.y,l:10,s:1.4});sfx('hit');HS=3;TRA=.3;}}},
+  if(b&&!b.ko&&DS.boss&&DS.ally!=null&&--DS.ally<=0){DS.ally=300;if(b.hp>1){b.hp--;floats.push({x:b.x,y:b.y,s:'佟掌柜：板凳！',l:60});fxQ.push({x:b.x,y:b.y,l:10,s:1.4});sfx('hit');HS=3;TRA=.3;}}},
  boss(){for(const e of ents)if(e.g){e.ko=1;e.chase=0;}DS.alarm=0;const b={t:'qian',nm:'钱夫人',x:15*T,y:6.2*T,r:15,hp:18,max:18,area,st:0,cd:80,ang:Math.PI/2,isBoss:1,onDie:e=>{e.hp=1;e.ko=1;PJ=[];this.end();}};ents.push(b);DS.boss=b;DS.ally=240;sfx('stage');note('钱夫人亲自动手了！');},
  bossUpd(b){if(b.fcd>0)b.fcd--;if(b.frz>0){b.frz--;return;}const dx=P.x-b.x,dy=P.y-b.y,d=Math.hypot(dx,dy)||1;if(b.hurt>0)b.hurt--;b.cd--;
   if(b.st==0){b.ang=Math.atan2(dy,dx);if(d>70)dMove(b,dx/d*1,dy/d*1,b.r,eSolid);if(b.cd<=0){if(Math.random()<.5){b.st=1;b.ch=36;b.cdx=dx/d;b.cdy=dy/d;}else{b.st=3;b.ch=24;}}}
@@ -4782,7 +4847,7 @@ LS[4]={init(){P.x=2.5*T;P.y=17.5*T;DS.stealth=1;DS.permKO=1;
   else if(b.st==3){if(--b.ch<=0){const a0=Math.atan2(dy,dx);for(let i=-2;i<=2;i++){const a=a0+i*.26;PJ.push({x:b.x,y:b.y,vx:Math.cos(a)*3.4,vy:Math.sin(a)*3.4,l:110});}sfx('coin');b.st=0;b.cd=b.hp<9?75:105;}}
   if(d<b.r+12&&!(b.hurt>0))hurtP(b.st==2?2:1,dx/d,dy/d);
   if(b.hp<=9&&!DS.summon){DS.summon=1;say('钱夫人',['废物！都给我起来！'],()=>{for(const p of[[12,7],[18,7]]){const e=G('hench',[p]);e.chase=1;e.hp=2;e.max=2;}});}},
- end(){say('钱夫人',['（瘫坐）我的金距鸡王……我的钱府……','乔不留：“鸡输了就输了，下回换只鸡——别换人。”'],()=>{NPCS.qianfu=[{id:'ya',x:15,y:7.2}];say('柳二丫',['（揉着手腕）喂，乔不留。……谢了。','不过你要敢到处说是你救的我，我就说是我救的你！'],()=>say(QN,['（笑）好，是你救的我。','打那以后，我把偷来的东西都还了回去，金盆洗手。','跟着二丫，进了葫芦镇一家叫“同难客栈”的小店，当了个跑堂。','盗圣不偷了——只偷偷，多看她两眼。'],dWin));});}};
+ end(){say('钱夫人',['（瘫坐）我的金距鸡王……我的钱府……','白展堂：“鸡输了就输了，下回换只鸡——别换人。”'],()=>{NPCS.qianfu=[{id:'liu',x:15,y:7.2}];say('佟掌柜',['（揉着手腕）喂，白展堂。……谢了。','不过你要敢到处说是你救的我，我就说是我救的你！'],()=>say(QN,['（笑）好，是你救的我。','打那以后，我把偷来的东西都还了回去，金盆洗手。','跟着她，进了葫芦镇一家叫“同难客栈”的小店，当了个跑堂。','盗圣不偷了——只偷偷，多看她两眼。'],dWin));});}};
 
 // ---------- 3D 附加 ----------
 function own(o,k,mk){if(!o[k]){o[k]=mk();DG.add(o[k]);}const m=o[k];m.userData.u=1;m.visible=true;return m;}
@@ -4850,7 +4915,7 @@ function splitL(s,w,font){ctx.font=font;const out=[];let line='';for(const ch of
 function frame(r,on,fill){ctx.save();ctx.fillStyle=fill;rrect(r.x,r.y,r.w,r.h,6);ctx.fill();ctx.lineWidth=on?3:1.4;ctx.strokeStyle=on?'#f0d080':'rgba(200,168,106,.6)';if(on){ctx.shadowColor='rgba(255,210,120,.8)';ctx.shadowBlur=16;}rrect(r.x,r.y,r.w,r.h,6);ctx.stroke();ctx.restore();
  ctx.strokeStyle=GOLD;ctx.lineWidth=2;const c=12;[[r.x+4,r.y+4,1,1],[r.x+r.w-4,r.y+4,-1,1],[r.x+4,r.y+r.h-4,1,-1],[r.x+r.w-4,r.y+r.h-4,-1,-1]].forEach(([a,b,sx,sy])=>{ctx.beginPath();ctx.moveTo(a,b+sy*c);ctx.lineTo(a,b);ctx.lineTo(a+sx*c,b);ctx.stroke();});}
 function drawChap(){shade(.5,.12);bigTitle('同难客栈',58,42);tx('选 择 篇 章',W/2,92,'18px '+SERIF,'#e2c88e','center');
- const D=[{nm:'李大嘴篇',sub:'第一至五回',seal:'壹',d:['大厨挥勺护店','上菜·抓贼·招亲']},{nm:'乔不留·盗圣传',sub:'第六至十回',seal:'新',d:['神偷如何成盗圣','王府·皇宫·轻功']},{nm:'吕秀才篇',sub:'第十一至十五回',seal:'文',d:['关中大侠的诞生','诗战·断案·嘴遁']}];
+ const D=[{nm:'李大嘴篇',sub:'第一至五回',seal:'壹',d:['大厨挥勺护店','上菜·抓贼·招亲']},{nm:'白展堂·盗圣传',sub:'第六至十回',seal:'新',d:['神偷如何成盗圣','王府·皇宫·轻功']},{nm:'吕秀才篇',sub:'第十一至十五回',seal:'文',d:['关中大侠的诞生','诗战·断案·嘴遁']}];
  CARD.forEach((r,i)=>{const on=CSEL==i;frame(r,on,on?'rgba(40,26,14,.22)':'rgba(10,7,5,.38)');const y0=r.y+r.h-132;ink(r.x+8,y0,r.w-16,120,.94);
  seal(D[i].seal,r.x+14,r.y+14,16);tx(D[i].nm,r.x+r.w/2,y0+34,'bold 24px '+SERIF,on?'#f6e2a8':'#d8c49a','center');tx(D[i].sub,r.x+r.w/2,y0+60,'15px '+SANS,'#cdbb94','center');
  D[i].d.forEach((line,k)=>tx(line,r.x+r.w/2,y0+86+k*22,'15px '+SANS,'#efe2c4','center'));
@@ -4858,7 +4923,7 @@ function drawChap(){shade(.5,.12);bigTitle('同难客栈',58,42);tx('选 择 篇
  if(i==2&&typeof lUnl==='function')tx('已解锁 '+(lUnl()+1)+'/5',r.x+r.w-12,r.y+34,'bold 14px '+SANS,'#ead39a','right');});
  prompt(KT('← → 选择 · 回车 确认 · Esc 返回','点一张卡片开始'),H-28);}
 
-function drawDsel(){shade(.7,.45);bigTitle('乔不留 · 盗圣传',96,46);tx('神偷是怎么炼成的',W/2,134,'20px '+SERIF,'#e2c88e','center');const u=dUnl();
+function drawDsel(){shade(.7,.45);bigTitle('白展堂 · 盗圣传',96,46);tx('神偷是怎么炼成的',W/2,134,'20px '+SERIF,'#e2c88e','center');const u=dUnl();
  for(let i=0;i<5;i++){const r=LCARD(i),on=DSEL==i,lk=i>u;frame(r,on,lk?'rgba(10,7,5,.75)':'rgba(30,20,12,.82)');const E=DLV[i];const [a,b]=E.t.split(' · ');
   seal(a,r.x+r.w/2-30,r.y+16,18);ctx.globalAlpha=lk?.45:1;splitL(b,r.w-24,'bold 22px '+SERIF).forEach((s,k)=>tx(s,r.x+r.w/2,r.y+96+k*30,'bold 22px '+SERIF,on?'#f6e2a8':'#e6cf98','center'));
   tx(E.s,r.x+r.w/2,r.y+176,'bold 17px '+SANS,'#ead39a','center');splitL(E.d,r.w-26,'16px '+SANS).forEach((s,k)=>tx(s,r.x+r.w/2,r.y+206+k*22,'16px '+SANS,'#efe2c4','center'));ctx.globalAlpha=1;
@@ -4898,9 +4963,9 @@ function dLabels(){for(const n of NPCS[area]||[]){const C=CAST[n.id],[a,b]=pp(n.
  if(HIDE){const [a,b]=pp(P.x,P.y,1.9);tx('屏息',a,b,'bold 16px '+SANS,'#9ad0ff','center',.9);}
  for(const f of floats){const [a,b]=pp(f.x,f.y,1.9+(50-Math.min(50,f.l))*.012);tx(f.s,a,b,'bold 21px '+SANS,'#ffd98a','center',.9);}}
 function dDraw(){if(mode=='drecap'){const E=DLV[LV],f='23px '+SANS;card(E.t+' · 完',[...splitL(E.gag,680,f),'',...splitL('“'+E.moral+'”',680,f),'',LV<4?'解锁：'+DLV[LV+1].t:'盗圣传 · 全篇通关！'],KT('按 回车 看下一回','点屏幕 看下一回').replace('下一回',LV<4?'下一回':'结局'),220);return;}
- if(mode=='dend'){card('盗圣传 · 完',['玉麒麟还回了王府，御膳……已经吃了。','盗圣乔不留金盆洗手，在同难客栈当了跑堂。','钱夫人改行卖鸡蛋，据说生意不错。','','“有难同当——这一难，他替她当了。”'],KT('按 回车 返回选关','点屏幕 返回选关'),230);return;}
+ if(mode=='dend'){card('盗圣传 · 完',['玉麒麟还回了王府，御膳……已经吃了。','盗圣白展堂金盆洗手，在同难客栈当了跑堂。','钱夫人改行卖鸡蛋，据说生意不错。','','“有难同当——这一难，他替她当了。”'],KT('按 回车 返回选关','点屏幕 返回选关'),230);return;}
  dLabels();dHUD();
- if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('乔不留失手了',H/2-50,56);tx(REASON,W/2,H/2+14,'bold 24px '+SANS,'#ffb8a0','center');splitL(QUIP,700,'21px '+SANS).forEach((s,i)=>tx(s,W/2,H/2+52+i*30,'21px '+SANS,'#efe2c4','center'));tx(KT('按回车重来本回 · Esc 暂停回标题','点屏幕重来本回'),W/2,H/2+130,'bold 20px '+SANS,'#ead39a','center');}}
+ if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('白展堂失手了',H/2-50,56);tx(REASON,W/2,H/2+14,'bold 24px '+SANS,'#ffb8a0','center');splitL(QUIP,700,'21px '+SANS).forEach((s,i)=>tx(s,W/2,H/2+52+i*30,'21px '+SANS,'#efe2c4','center'));tx(KT('按回车重来本回 · Esc 暂停回标题','点屏幕重来本回'),W/2,H/2+130,'bold 20px '+SANS,'#ead39a','center');}}
 {const _d=drawUI;drawUI=function(){if(mode=='chap'||mode=='dsel'||mode=='lsel'||CH=='dao'&&['play','over','drecap','dend'].includes(mode)||CH=='lv'&&['play','over','lrecap','lend'].includes(mode)){ctx=MC;ctx.setTransform(cv.width/W,0,0,cv.height/H,0,0);ctx.clearRect(0,0,W,H);ctx.globalAlpha=1;
   if(mode=='chap')drawChap();else if(mode=='dsel')drawDsel();else if(mode=='lsel'&&typeof drawLsel==='function')drawLsel();else if(CH=='lv'&&typeof lDraw==='function')lDraw();else dDraw();return;}_d();};}
 
@@ -4937,9 +5002,9 @@ const LAREA=['street','inn','street','inn','street'];
 const LLV=[
  {t:'第十一回 · 关中大侠的诞生',s:'误打误撞',d:'书生落难，却成了关中大侠',gag:'乡亲：“关中大侠！” 吕秀才：“我……我只是背错了《论语》。”',moral:'名号有时是别人喊出来的，跟你会不会打架没关系。'},
  {t:'第十二回 · 智斗鸡无病',s:'诗词对决',d:'连对五联，压倒病秧子诗仙',gag:'鸡无病：“你这算诗吗？” 吕秀才：“子曰：能押韵就行。”',moral:'嘴仗赢了不丢人，输了也别打人。'},
- {t:'第十三回 · 争风吃醋',s:'劝架',d:'二丫与芙蓉抢人，子曰劝和',gag:'二丫：“他是我的！” 芙蓉：“他是书的！” 吕秀才：“我是我的……”',moral:'劝架要站中间——但别站太中间。'},
+ {t:'第十三回 · 争风吃醋',s:'劝架',d:'芙蓉与无双抢人，子曰劝和',gag:'芙蓉：“他是我的！” 无双：“他是书的！” 吕秀才：“我是我的……”',moral:'劝架要站中间——但别站太中间。'},
  {t:'第十四回 · 吕秀才断案',s:'谁偷了鸡',d:'问话、找线索、指认真凶',gag:'真凶：“你怎知是我？” 吕秀才：“子曰：偷鸡的人，手里有毛。”',moral:'断案靠脑子，不靠嗓门。'},
- {t:'第十五回 · 嘴遁点穴',s:'联手乔不留',d:'嘴遁拖住恶霸，点穴五次',gag:'恶霸：“你废话真多！” 吕秀才：“子曰：废话也是话。”',moral:'秀才的嘴，盗圣的手——同难才是一家人。'}];
+ {t:'第十五回 · 嘴遁点穴',s:'联手白展堂',d:'嘴遁拖住恶霸，点穴五次',gag:'恶霸：“你废话真多！” 吕秀才：“子曰：废话也是话。”',moral:'秀才的嘴，盗圣的手——同难才是一家人。'}];
 const LN='吕秀才';
 let LLS=[],LSTATE={},LVOXB=null,LVOXL=0,LKT=0,ZiYueT=0;
 const ZIYUE64="SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYxLjcuMTAzAAAAAAAAAAAAAAD/84TAAAAAAAAAAAAASW5mbwAAAA8AAAAUAAAKIAAeHh4eKioqKio2NjY2NkJCQkJCTk5OTk5aWlpaWmVlZWVlcXFxcXF9fX19fYmJiYmJlZWVlZWhoaGhoa2tra2tuLi4uLjExMTExNDQ0NDQ3Nzc3Nzo6Ojo6PT09PT0//////8AAAAATGF2YzYxLjE5AAAAAAAAAAAAAAAAJAJDAAAAAAAACiAzjgrsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/81TEABej8lQxQTgBgEv//4F/+p7zzz8wxphhmp7z3//8/6v/Peef//6v/+r0PPehhlTDP//PP/PMMzzz5g3PdDP+YYyjQxujer/8wxlHBoQY8RwfkxwB4OyaGGV5lR8bkxwH4luYYo+N3nXe/u6/S2ONttqKFCL/81TEDBnZGvpdjGACBhUezqM494E2q9Tj49P16w4cLTx6/VxzfwzWpBa5vOTPX/rHPLrrm8tf5vedm3Zb55gDh9JAuHREdE7hZTv7Qzev9qr1/in/VF8an+ZKOulDP9px6PSkYgMCYqq67XaxtuXkOqwJZaHA5If/81TEDxoJywJdzEACE8HogmpPWLn0I8H9MSgbviocWhACISsNWhpY42RyF21DouIirni9PTtoVKqG/juvQu4ttYjfp7LKaH3qX4JHjDT9aQ3YLLS+30eXDVFX2ija3f7/OoX9mMTV6qZmcsleljQGV50TS3zVjhH/81TEERuB6u7+0kaQCXkLPmfVrRacXcYpfwQGH1DOu3CPWYuyeUBAGCLECUOjtXWNuiudIkvIRwwR4lDQ25X5czS5wtj5T//Lz4x9pr4VwlfxMO1Ouzx4lRNETcsPgZv5j3R+S765bkoB0IpwAAGzPhUfozXWfOL/81TEDhrjxtY8wkSRi4FwklbhxONPl/3fJYQRbXZ/TWcxf1s5ojZHxKeOUcWj6u5EYxDEAGACKvJe99e3uQIYAmUcjRAR6ZP96/9tv+/z9NOj0X/0KXvKjoV5ZP0d6PT///+nmT4pXW32VaANZAAImbe5x41hr+L/81TEDRsRltY+wwx0OlTNiiM5pI33jYk0FC2fXu5Rcuo99qtPQLTErLQbLwtTXrXsy7bH7niqGBtz/f3+5Ud7+v7e8Z7QLEldU8nS7X+1parytvJgqA772Q36FsFIslq0PewsTu//TlIueIrV7IlsZaTU1typQQj/81TECxkg9wJeekxqwJXS4Rt6FHXoj8mR+CAUCZQgOYQe9nU9f+qY8IQCCnebv6/2EN0wtHeXWso4aKIGiJJkVadBxB3+GXj2q+WxMaJCEcaXCwom+vDVUVjxUMnWhJT2f/lhIUFlJBWjRCrWhz89HG5nJvZ2Ann/81TEERjDtupWeMTS/BTe+K4onjP4aXmBMwXK1aXGZm8cbTcRwZ0FjCAFNqehKvV1VxKENI9Hq3d0L//7t66n/+jISxlupby4XVZm////////T/Pn2o1ABXFtNYRYFgg7ZGAC0gb/TDPBFOGfyqPBUmGUCFtgE1j/81TEGRahQuZWewqKmg1ksbhrWpsZ/ppjRyhN4mU4UdBDT9qLs7Cjw48+XvRav/+ExN/NIQpbmBgQRb///yCi7gywc4RBsKgZp0rvHGb1KBUdaAJNsYf5sE3wX8Pe24kmsgxWJpg7eYvUH+nqv5+Gc/fxVSyVVNH/81TEKRcBkupeesR+NGpDvsMBvF+66ElerQohJ9//BC2ODlF1guaeyXKmgZ/DJ/xVTbAua/0dn//+LiR4zYiZbTtssASe1zn0phnxihHJFsIOtzGm4Sp2PsM5kPaIzDJSeuV1/KRik2JQroqq2/+hVnKGGB5plxP/81TEOBaBTwZeeMSqZIMctr2THvb+9yfUuaQPaoYxE+sWPkwwJRH/6qE/kUMX6uypY2wClbI47LKBDETK6pCjZ6wQabtSo3ENIUjAZ1OG56exK26/04ptUOOZ0ME75f/ZrM9CasLBjplSL8vDh0vFqVn/3+puQX7/81TESRepivpew8YSTStb/ZYKRJFx7/+cHpKf3OMmwgUXSrESqrl1AELD2ZxZjNUP2JyjtUBsRDRH0B7mZh5QsyoMYwWWHC/B1cGeUvw2cIpMmovcTdV6v/+g+o+/ieucXVHT//8BFEbqHiQh/VvV23frUPTNNlz/81TEVRcBku8eegrIewgkFx51CaANdWQAYhD52Yd79MJovqCMiiFNMrfYuCY+CBBvyBXZK/q/E9q1w+UBRM30ICYNWSqOhyBxRTimnH/M075qlFowzuC5GUGIh3xb/+ppVgFHFNgYeZd/2f//+l5+PiyakzAmmWT/81TEZBehlt5WwsSYAAme16mzsOmJcZbPlsMFGyGhGu2kmsbg9NKSxoPh6yLHWNF/95AgwZIa+xI4gQoK9+ydv85O7EeRx53e4Iqj8uf/+4axVkglZnu19c0MrP//09hMMDjgqurtpOyQLXZHG5tE+Qe+Nzdiojb/81TEcBdRkvMeegbEyQP+nNvL4R25j/ha0H3RggUgQABf+e4ooRnLq1Dt5/5Kc+2eRElIjoNRz0mA9d8uAkp/+piVho20i6KxXjVE7ERV73+j/tqoMEyR97k1shE0pABaxz0MMm1z0FdgM5v4gB/RNk4aaEUJ01b/81TEfRfZbwpWewaK8u0x+dms7tkfN0oW0maRz6noOeYvNLPX1N0v922oOZSVFHnJcHnfnP/12qkgMaMPS6gyhwvUxamGWWP/+4xfFDmzJCg9lACnbCB2RPMMZZyOJRG3ZWGlaQHCrY4mygqJ4zUs4sigW+Vr6i//81TEiBhxcupWesS42dagjL0N465UAua0aHrs7CiNmJtRQOmHI8x773fPs9i7stRgtV142vs1eCw27Yln/i7BShFqnki5wt/V3FrYxNxBr/1LaEBYVuel9AB/r0tJelgMFuqXWbijcX1TKWiGKGol5C+LCntHaxL/81TEkRwxlt5XT1gAw8hzjmNzg4jhadLSVUxsg50ki6F8BvD3Io9iWALUkBjGY8AWI6lZWOglYnxFQJYSoLiMCeJI2TC6DAl5MkUHKieUDE4ZHXJEdxeSUiTWJcli8YsyvPmK2VoseQRdNS0Ef/rt9H/6/ey60uz/81TEiyrz7sgrmGgBytnZeyvRr60qH+p7surTUi9Tpr/UvfXUpTb/sxxd+oSV9ZCTmCTW1u1UBVeMyqqquGAlVVVVVWZmZmZv/2ZtmAhR/9VVKBgIJA0bioKgqGl8SneDUOxKCwNHvBUFQkDQNA0DQKgr/4lO8Rf/81TEShbQ/sZfwxgAKnf/xFyp3EoTiIGsSnfEQNPVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVU=";
@@ -4955,7 +5020,7 @@ Object.assign(LOOK,{
   sph(u.H,.03,M('#8aaa7a',{transparent:true,opacity:.35}),.07,-.02,.1,5,4,0);sph(u.H,.03,M('#8aaa7a',{transparent:true,opacity:.35}),-.07,-.02,.1,5,4,0);}},
  bully:{robe:'#4a2a2a',inner:'#c8a888',trim:'#1a1010',sash:'#8a2318',pants:'#1a1412',hs:'short',len:'short',wide:1.28,x(u){hcap(u.H,.145,M('#2a1a14'),0,.03,0,0);bx(u.b,.5,.14,.42,M('#6a3a2a'),0,1.4,0,0);}},
  fu:{robe:'#c45a7a',inner:'#f2e8e4',skirt:'#e8d8d4',trim:'#8a2a48',sash:'#5a3a8a',floral:1,female:1,hs:'buns',flare:1.18,x(u){const gd=M('#e8c070',{metalness:.55});sph(u.H,.022,gd,.12,.22,-.02,5,4,0);sph(u.H,.022,gd,-.12,.22,-.02,5,4,0);}}});
-Object.assign(PFM,{'吕秀才':'wen','吕轻侯':'wen','鸡无病':'ji','恶霸':'bully','郭芙蓉':'fu','芙蓉':'fu'});
+Object.assign(PFM,{'吕秀才':'wen','吕轻侯':'wen','鸡无病':'ji','恶霸':'bully','祝无双':'lady','无双':'lady','郭芙蓉':'ya','芙蓉':'ya','燕小六':'yan','小米':'beggar','莫小贝':'mei'});
 {const _pf=pfig;pfig=function(name){const id=PFM[name];if(id){if(!PFIG[id]){const f=fig(id);f.rotation.y=-.35;PFIG[id]=f;pScene.add(f);}return PFIG[id];}return _pf(name);};}
 {const _hurt=hurtP;hurtP=function(d,nx,ny){if(CH=='lv'){if(P.inv>0||P.dash>0)return;P.hp-=d;P.inv=50;HS=4;TRA=Math.min(1,TRA+.5);FL=.4;FLC='#c02818';P.kx=nx*5;P.ky=ny*5;sfx('hurt');if(P.hp<=0){P.hp=0;lLose('气血耗尽','吕秀才：“子曰：留得青山在……”');}return;}_hurt(d,nx,ny);};}
 
@@ -4998,7 +5063,7 @@ function lLabels(){for(const n of NPCS[area]||[]){const C=CAST[n.id],[a,b]=pp(n.
  for(const f of floats){const [a,b]=pp(f.x,f.y,1.9+(50-Math.min(50,f.l))*.012);tx(f.s,a,b,'bold 21px '+SANS,'#ffd98a','center',.9);}}
 
 function lDraw(){if(mode=='lrecap'){const E=LLV[LV],f='23px '+SANS;card(E.t+' · 完',[...splitL(E.gag,680,f),'',...splitL('"'+E.moral+'"',680,f),'',LV<4?'解锁：'+LLV[LV+1].t:'吕秀才篇 · 全篇通关！'],KT('按 回车 看下一回','点屏幕 看下一回').replace('下一回',LV<4?'下一回':'结局'),220);return;}
- if(mode=='lend'){card('吕秀才篇 · 完',['关中大侠的名号，是背错书背出来的。','诗赢了鸡无病，架劝开了，案也断了。','最后靠一张嘴，拖住恶霸，等来了乔不留的点穴。','','“子曰：有难同当。此话，同难客栈当真。”'],KT('按 回车 返回选关','点屏幕 返回选关'),230);return;}
+ if(mode=='lend'){card('吕秀才篇 · 完',['关中大侠的名号，是背错书背出来的。','诗赢了鸡无病，架劝开了，案也断了。','最后靠一张嘴，拖住恶霸，等来了白展堂的点穴。','','“子曰：有难同当。此话，同难客栈当真。”'],KT('按 回车 返回选关','点屏幕 返回选关'),230);return;}
  lLabels();lHUD();
  if(mode=='over'){ctx.fillStyle='rgba(8,5,3,.72)';ctx.fillRect(0,0,W,H);bigTitle('吕秀才失手了',H/2-50,56);tx(REASON,W/2,H/2+14,'bold 24px '+SANS,'#ffb8a0','center');splitL(QUIP,700,'21px '+SANS).forEach((s,i)=>tx(s,W/2,H/2+52+i*30,'21px '+SANS,'#efe2c4','center'));tx(KT('按回车重来本回 · Esc 暂停回标题','点屏幕重来本回'),W/2,H/2+130,'bold 20px '+SANS,'#ead39a','center');}}
 
@@ -5064,8 +5129,8 @@ LLS[1]={noJoy:1,init(){P.x=12*T;P.y=10*T;area='inn';LSTATE={streak:0,need:5,roun
 
 // 第十三回 争风吃醋
 LLS[2]={init(){P.x=15*T;P.y=12*T;area='street';LSTATE={calm:0,need:5,cd:0};NPCS.street=[];
-  const ya={t:'ya',nm:'柳二丫',x:8*T,y:9*T,r:12,hp:1,max:1,area,girl:1,side:-1,ang:0,noHit:1},fu={t:'fu',nm:'郭芙蓉',x:22*T,y:9*T,r:12,hp:1,max:1,area,girl:1,side:1,ang:Math.PI,noHit:1};ents.push(ya,fu);LSTATE.ya=ya;LSTATE.fu=fu;
-  say('柳二丫',['吕秀才！你昨天是不是又给她讲《诗经》了？！'],()=>say('郭芙蓉',['二丫姐姐，诗是讲给有缘人听的——他先看我的。'],()=>say(LN,['二位姑娘息怒！子曰：君子和而不同……约！',KT('站到两人中间，时机对了按 J 子曰 劝架。挨打会掉血。','站到两人中间，时机对了点「子曰」劝架。挨打会掉血。')],()=>note('劝架开始！'))));},
+  const ya={t:'ya',nm:'郭芙蓉',x:8*T,y:9*T,r:12,hp:1,max:1,area,girl:1,side:-1,ang:0,noHit:1},fu={t:'lady',nm:'祝无双',x:22*T,y:9*T,r:12,hp:1,max:1,area,girl:1,side:1,ang:Math.PI,noHit:1};ents.push(ya,fu);LSTATE.ya=ya;LSTATE.fu=fu;
+  say('郭芙蓉',['吕秀才！你昨天是不是又给她讲《诗经》了？！'],()=>say('祝无双',['芙蓉姐姐，诗是讲给有缘人听的——他先看我的。'],()=>say(LN,['二位姑娘息怒！子曰：君子和而不同……约！',KT('站到两人中间，时机对了按 J 子曰 劝架。挨打会掉血。','站到两人中间，时机对了点「子曰」劝架。挨打会掉血。')],()=>note('劝架开始！'))));},
  obj(){return '子曰劝架 '+LSTATE.calm+'/'+LSTATE.need+' · 别站枪口'},
  upd(){const ya=LSTATE.ya,fu=LSTATE.fu;if(!ya||!fu)return;if(LSTATE.cd>0)LSTATE.cd--;
   // girls rush toward each other
@@ -5076,36 +5141,36 @@ LLS[2]={init(){P.x=15*T;P.y=12*T;area='street';LSTATE={calm:0,need:5,cd:0};NPCS.
    const cx=(ya.x+fu.x)/2,cy=(ya.y+fu.y)/2;if(Math.hypot(P.x-cx,P.y-cy)<55&&P.inv<=0){hurtP(1,(P.x-cx)/40,(P.y-cy)/40);note('被剑气扫到了！');LSTATE.cd=40;}}
   // auto clash particles
   if(clash&&tick%12==0){for(let i=0;i<3;i++)parts.push({x:(ya.x+fu.x)/2,y:(ya.y+fu.y)/2,vx:Math.random()*4-2,vy:Math.random()*4-2,l:16,c:'#ffd24a'});}
-  if(LSTATE.calm>=LSTATE.need){LSTATE.frozen=1;say('柳二丫',['……哼。看在子曰的份上，今日放过她。'],()=>say('郭芙蓉',['我也不是那种蛮不讲理的人——最多再吵八回。'],()=>say(LN,['（瘫坐）子曰：和平……最贵。'],lWin)));LSTATE.calm=999;}
-  if(P.hp<=0)lLose('劝架劝成了夹心饼','二丫＆芙蓉：“让开！……咦他怎么躺下了？”');}};
+  if(LSTATE.calm>=LSTATE.need){LSTATE.frozen=1;say('郭芙蓉',['……哼。看在子曰的份上，今日放过她。'],()=>say('祝无双',['我也不是那种蛮不讲理的人——最多再吵八回。'],()=>say(LN,['（瘫坐）子曰：和平……最贵。'],lWin)));LSTATE.calm=999;}
+  if(P.hp<=0)lLose('劝架劝成了夹心饼','芙蓉＆无双：“让开！……咦他怎么躺下了？”');}};
 
 // 第十四回 断案
 const CLUES=['鸡毛在后院灶台旁','账本少了三文买鸡钱','更夫说三更有人咳嗽','灶台有半枚铜钱'];
 LLS[3]={init(){P.x=15*T;P.y=12*T;area='inn';LSTATE={asked:{},clue:0,accused:0};NPCS.inn=[{id:'liu',x:9,y:3},{id:'ya',x:14,y:10},{id:'qiao',x:20,y:3},{id:'zhou',x:25,y:14}];
   // suspect markers as ents
-  [['liu','柳三娘'],['ya','柳二丫'],['qiao','乔不留'],['zhou','周铁头']].forEach(([id,nm],i)=>{});
-  say('柳三娘',['客栈的老母鸡没了！谁偷的？！','吕秀才，你不是关中大侠吗？断个案！'],()=>say(LN,['（推眼镜）子曰：听讼，吾犹人也。——约！',KT('E 谈 询问伙计，找齐线索再指认。','「谈」询问伙计，找齐线索再指认。'),'线索齐了，再找真凶对质。']));},
+  [['liu','佟掌柜'],['ya','郭芙蓉'],['qiao','白展堂'],['zhou','邢育森']].forEach(([id,nm],i)=>{});
+  say('佟掌柜',['客栈的老母鸡没了！谁偷的？！','吕秀才，你不是关中大侠吗？断个案！'],()=>say(LN,['（推眼镜）子曰：听讼，吾犹人也。——约！',KT('E 谈 询问伙计，找齐线索再指认。','「谈」询问伙计，找齐线索再指认。'),'线索齐了，再找真凶对质。']));},
  obj(){return LSTATE.clue<3?'询问伙计，收集线索 '+LSTATE.clue+'/3':'指认真凶（找可疑的人谈）'},
  talkNpc(id){const A=LSTATE.asked;if(A[id]){note('已经问过了');return;}A[id]=1;
   const lines={liu:['三更我在算账，听见后院扑棱一声。','灶台旁好像有鸡毛……你自己看去。'],
-   ya:['不是我！我昨晚练剑呢。对了，乔不留鬼鬼祟祟的。','……也可能是周大叔，他爱喝鸡汤。'],
+   ya:['不是我！我昨晚练剑呢。对了，白展堂鬼鬼祟祟的。','……也可能是老邢，他爱喝鸡汤。'],
    qiao:['我？我偷东西从不偷鸡——鸡会叫。','不过我在后院捡到半枚铜钱，给你。'],
    zhou:['咳咳……我半夜起来喝水，咳了两声。','鸡？我没看见鸡。真的。真的没看见。']};
   const cues={liu:0,ya:-1,qiao:3,zhou:2}; // clue index or -1
   say(CAST[id].name,lines[id],()=>{if(cues[id]>=0&&!(LSTATE.got||{})[cues[id]]){LSTATE.got=LSTATE.got||{};LSTATE.got[cues[id]]=1;LSTATE.clue++;sfx('coin');note('线索：'+CLUES[cues[id]]+'（'+LSTATE.clue+'/3）');}
-   if(LSTATE.clue>=3&&id=='zhou'){say(LN,['周兄，三更咳嗽、鸡毛、铜钱……都对上了。','偷鸡的人，就是你。'],null,[['就是周铁头！',()=>this.accuse(1)],['再想想……',()=>note('再转转问问')]]);}});},
- accuse(ok){if(ok){say('周铁头',['……行，我承认。鸡汤实在香。','我赔三娘一只，再外加……帮工三天。'],()=>say('柳三娘',['算你识相。吕秀才，这案断得漂亮！'],()=>say(LN,['子曰：知之为知之。——约！'],lWin)));}
-  else{sfx('bad');say(LN,['……好像指错了。'],()=>lLose('指错了人','三娘：“关中大侠的眼睛，是装饰的吗？”'));}},
+   if(LSTATE.clue>=3&&id=='zhou'){say(LN,['老邢，三更咳嗽、鸡毛、铜钱……都对上了。','偷鸡的人，就是你。'],null,[['就是邢育森！',()=>this.accuse(1)],['再想想……',()=>note('再转转问问')]]);}});},
+ accuse(ok){if(ok){say('邢育森',['……行，我承认。鸡汤实在香。','我赔掌柜一只，再外加……帮工三天。'],()=>say('佟掌柜',['算你识相。吕秀才，这案断得漂亮！'],()=>say(LN,['子曰：知之为知之。——约！'],lWin)));}
+  else{sfx('bad');say(LN,['……好像指错了。'],()=>lLose('指错了人','掌柜：“关中大侠的眼睛，是装饰的吗？”'));}},
  upd(){if(hit('KeyE')&&!dlg){let best=null,bd=99;for(const n of NPCS.inn){const d=Math.hypot(n.x*T+16-P.x,n.y*T+16-P.y);if(d<50&&d<bd){bd=d;best=n;}}
   if(best){if(LSTATE.clue>=3&&best.id!='zhou'&&LSTATE.asked[best.id]){say(LN,['莫非是'+CAST[best.id].name+'？'],null,[['就是此人！',()=>this.accuse(0)],['再想想',()=>{}]]);}else this.talkNpc(best.id);}}}};
 
-// 第十五回 联合乔不留
+// 第十五回 联合白展堂
 LLS[4]={init(){P.x=10*T;P.y=14*T;area='street';LSTATE={hits:0,need:5,zuib:0,qcd:0};NPCS.street=[{id:'qiao',x:20,y:14}];
   const b={t:'bully',nm:'恶霸·赵横',x:15*T,y:7*T,r:16,hp:20,max:20,area,isBoss:1,ang:Math.PI/2,st:0,cd:80,aggro:null};ents.push(b);LSTATE.boss=b;
-  ents.push({t:'qiao',nm:'乔不留',x:22*T,y:14*T,r:11,hp:1,max:1,area,ally:1,noHit:1,ang:0});
+  ents.push({t:'qiao',nm:'白展堂',x:22*T,y:14*T,r:11,hp:1,max:1,area,ally:1,noHit:1,ang:0});
   say('恶霸·赵横',['听说关中大侠在这？让我见识见识！'],()=>{
-    say(LN,['赵横？你催粮欺市，今日该了。',KT('Q 嘴遁拖住恶霸，乔不留会上前点穴。需成功5次。','「嘴遁」拖住恶霸，乔不留会上前点穴。需成功5次。')],()=>{
-      say('乔不留',['你废话拖住他，我去点穴。就等你一声子曰。'],()=>note('开战！'));});});},
+    say(LN,['赵横？你催粮欺市，今日该了。',KT('Q 嘴遁拖住恶霸，白展堂会上前点穴。需成功5次。','「嘴遁」拖住恶霸，白展堂会上前点穴。需成功5次。')],()=>{
+      say('白展堂',['你废话拖住他，我去点穴。就等你一声子曰。'],()=>note('开战！'));});});},
  obj(){const b=LSTATE.boss;return b&&b.ko?'恶霸倒下了':'嘴遁拖住 · 点穴 '+LSTATE.hits+'/'+LSTATE.need},
  upd(){const b=LSTATE.boss;if(!b||b.ko)return;if(LSTATE.qcd>0)LSTATE.qcd--;
   if(LSTATE.zuib>0){LSTATE.zuib--;LSTATE.zuibOn=1;if(tick%40==0)floats.push({x:P.x,y:P.y,s:['子曰：君子……','听我说完！','有朋自远方来！'][(Math.random()*3)|0],l:50});}
@@ -5125,7 +5190,7 @@ LLS[4]={init(){P.x=10*T;P.y=14*T;area='street';LSTATE={hits:0,need:5,zuib:0,qcd:
   if(q){const qx=b.x-Math.cos(b.ang)*45,qy=b.y-Math.sin(b.ang)*45;const dqx=qx-q.x,dqy=qy-q.y,dq=Math.hypot(dqx,dqy)||1;q.ang=Math.atan2(b.y-q.y,b.x-q.x);
    if(LSTATE.zuibOn){lMove(q,dqx/dq*2.2,dqy/dq*2.2,q.r);
     if(LSTATE.qcd<=0&&Math.hypot(q.x-b.x,q.y-b.y)<52){LSTATE.qcd=70;LSTATE.hits++;b.stun=55;b.hp-=3;b.hurt=12;sfx('hit');HS=4;TRA=.35;fxQ.push({x:b.x,y:b.y,l:12,s:1.2});floats.push({x:b.x,y:b.y,s:'葵花点穴手！',l:55});note('点穴成功 '+LSTATE.hits+'/'+LSTATE.need);
-     if(LSTATE.hits>=LSTATE.need){b.ko=1;b.hp=0;PJ=[];say('恶霸·赵横',['你这书生……废话比拳头还硬……'],()=>{say('乔不留',['配合不错。'],()=>{say(LN,['子曰：有难同当。此话，同难客栈当真。'],lWin);});});}}
+     if(LSTATE.hits>=LSTATE.need){b.ko=1;b.hp=0;PJ=[];say('恶霸·赵横',['你这书生……废话比拳头还硬……'],()=>{say('白展堂',['配合不错。'],()=>{say(LN,['子曰：有难同当。此话，同难客栈当真。'],lWin);});});}}
    }else{lMove(q,(P.x+80-q.x)*.04,(P.y-q.y)*.04,q.r);}
   }
   if(P.hp<=0)lLose('被恶霸掀翻','赵横：关中大侠？先学会闭嘴吧！');}};
@@ -5164,5 +5229,87 @@ function lUpdate(){tick++;if(toastT>0)toastT--;if(LKT>0)LKT--;for(const p of par
  if(P.hp<=0&&mode!='over')lLose('气血耗尽','吕秀才：“子曰：留得青山在……”');}
 
 window.__lv={get LV(){return LV},get LSTATE(){return LSTATE},get CH(){return CH},get mode(){return mode},set mode(v){mode=v},lStart,lUnl,lSetUnl,LLS,get LS(){return LLS},get ZiYueT(){return ZiYueT},get VOX(){return !!LVOXB},shoutZiYue};
+</script>
+<script>
+// minimal GLB parser for our own exports (no deps beyond exported THREE classes)
+window.MiniGLB=(function(){
+ const BG=Object.getPrototypeOf(THREE.BoxGeometry),BA=(()=>{let c=new THREE.BoxGeometry().attributes.position.constructor;while(Object.getPrototypeOf(c).name&&Object.getPrototypeOf(c).name!='')c=Object.getPrototypeOf(c);return c;})();
+ const CT={5126:Float32Array,5123:Uint16Array,5125:Uint32Array,5121:Uint8Array},NC={SCALAR:1,VEC2:2,VEC3:3,VEC4:4};
+ function parse(ab){const dv=new DataView(ab);let off=12,json=null,bin=null;
+  while(off<dv.byteLength){const len=dv.getUint32(off,true),typ=dv.getUint32(off+4,true);const s=off+8;
+   if(typ==0x4E4F534A)json=JSON.parse(new TextDecoder().decode(new Uint8Array(ab,s,len)));else if(typ==0x004E4942)bin=ab.slice(s,s+len);off=s+len;}
+  const acc=i=>{const a=json.accessors[i],bv=json.bufferViews[a.bufferView],C=CT[a.componentType],n=NC[a.type];
+   const st=bv.byteStride,bo=(bv.byteOffset||0)+(a.byteOffset||0);
+   if(st&&st!=n*C.BYTES_PER_ELEMENT){const o=new C(a.count*n),src=new DataView(bin);for(let k=0;k<a.count;k++)for(let c=0;c<n;c++)o[k*n+c]=src.getFloat32(bo+k*st+c*4,true);return new BA(o,n);}
+   return new BA(new C(bin.slice(bo,bo+a.count*n*C.BYTES_PER_ELEMENT)),n);};
+  const out=[];
+  (json.nodes||[]).forEach(nd=>{if(nd.mesh==null)return;const me=json.meshes[nd.mesh];
+   me.primitives.forEach(p=>{const g=new BG();const A=p.attributes;g.setAttribute('position',acc(A.POSITION));if(A.NORMAL!=null)g.setAttribute('normal',acc(A.NORMAL));
+    if(A.TEXCOORD_0!=null)g.setAttribute('uv',acc(A.TEXCOORD_0));if(A.TEXCOORD_1!=null)g.setAttribute('uv1',acc(A.TEXCOORD_1));if(p.indices!=null)g.setIndex(acc(p.indices));
+    g.computeBoundingSphere();g.computeBoundingBox();
+    out.push({geo:g,mat:p.material!=null?json.materials[p.material].name:'',name:nd.name,t:nd.translation,r:nd.rotation,s:nd.scale});});});
+  return out;}
+ function load(url,onProg){return fetch(url).then(r=>{if(!r.ok)throw new Error(url+' '+r.status);return r.arrayBuffer();}).then(parse);}
+ function tex(url){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const t=new THREE.CanvasTexture(im);t.colorSpace=THREE.SRGBColorSpace;t.flipY=false;res(t);};im.onerror=()=>rej(new Error(url));im.src=url;});}
+ return {parse,load,tex};})();
+</script>
+<script>
+
+// ===== char9: modeled 3D characters (Blender GLB) + 3D bust portraits =====
+(function(){
+const IDS=['beggar','lady','wen','ya','liu','ma','qiao','zhou','yan','mei'];
+const CH={};window.__chr=CH;let need=IDS.length*3,got=0,fail=0;
+const ov=document.createElement('div');ov.id='ldov';ov.style.cssText='position:fixed;inset:0;z-index:9999;background:#1a120c;color:#e8d8b8;display:flex;flex-direction:column;align-items:center;justify-content:center;font:18px serif;letter-spacing:2px';
+ov.innerHTML='<div style="font-size:30px;margin-bottom:18px">同难客栈</div><div style="width:260px;height:10px;border:1px solid #8a6a4a;border-radius:6px;overflow:hidden"><div id="ldbar" style="height:100%;width:0;background:#c8903a"></div></div><div id="ldtx" style="margin-top:10px;font-size:14px">载入中 0%</div>';
+document.body.appendChild(ov);
+function tick(){got++;const p=Math.round(got/need*100);document.getElementById('ldbar').style.width=p+'%';document.getElementById('ldtx').textContent='载入中 '+p+'%';if(got>=need)finish();}
+if(!window.THREE||!window.MiniGLB||location.protocol=='file:'){need=0;}
+if(need)for(const id of IDS){CH[id]={parts:[]};
+ MiniGLB.load('assets/chars/'+id+'.glb').then(L=>{CH[id].parts=L;tick();}).catch(e=>{fail++;console.warn('chr glb',id,e.message);tick();});
+ for(const k of ['','_face','_pal','_hair'])MiniGLB.tex('assets/chars/'+id+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;CH[id]['t'+k]=t;tick();}).catch(e=>{fail++;console.warn('chr tex',id+k);tick();});}
+else setTimeout(finish,0);
+need=need?IDS.length*5+3:0;
+// hy3d: Hunyuan3D-built 白展堂 (qiao) replaces the stylised hull; old qiao files stay as fallback
+const HY={};window.__hy=HY;
+if(need){MiniGLB.load('assets/chars/qiao_hy.glb').then(L=>{HY.parts=L;tick();}).catch(e=>{console.warn('hy glb',e.message);tick();});
+ for(const k of ['head','body'])MiniGLB.tex('assets/chars/qiao_hy_'+k+'.webp').then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;HY[k]=t;tick();}).catch(e=>{console.warn('hy tex',k);tick();});}
+function hyUp(f,u){if(!HY.parts||!HY.parts.length||!HY.head||!HY.body)return false;
+ if(!HY.M){const mk=t=>new THREE.MeshStandardMaterial({map:t,roughness:.85,metalness:0,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:.18});HY.M={head:mk(HY.head),body:mk(HY.body)};}
+ u.b.traverse(o=>{if(o.isMesh)o.visible=false;});const g=new THREE.Group(),inner=new THREE.Group();g.add(inner);let hz=1.75;
+ for(const p of HY.parts){const k=p.mat.indexOf('head')>=0?'head':'body';const m=new THREE.Mesh(p.geo,HY.M[k]);m.castShadow=true;m.receiveShadow=true;inner.add(m);
+  if(k=='head'){const bb=p.geo.boundingBox;hz=bb.min.y+(bb.max.y-bb.min.y)*.55;}}
+ const s=f.scale.x||1;g.scale.setScalar(1/s);u.b.add(g);u.hull=g;u.hyIn=inner;u.hz=hz;u.hy=1;return true;}
+function mats(id){const c=CH[id];if(c.M)return c.M;const mk=(t,e)=>new THREE.MeshLambertMaterial({map:t,emissive:new THREE.Color('#ffffff'),emissiveMap:t,emissiveIntensity:e,side:THREE.DoubleSide});
+ c.M={chr:mk(c.t,.28),face:mk(c.t_face,.3),pal:mk(c.t_pal,.25),hair:mk(c.t_hair,.22)};c.M.hair.alphaTest=.45;c.M.face.side=THREE.FrontSide;return c.M;}
+function upgrade(f){const u=f.userData;if(!u||u.hull||!u.cid)return;if(u.cid=='qiao'&&hyUp(f,u))return;const c=CH[u.cid];if(!c||!c.parts.length||!c.t||!c.t_face||!c.t_pal||!c.t_hair)return;
+ u.b.traverse(o=>{if(o.isMesh)o.visible=false;});const M=mats(u.cid),g=new THREE.Group();let hz=1.5;
+ for(const p of c.parts){const k=p.mat.split('_')[0];const m=new THREE.Mesh(p.geo,M[k]||M.pal);if(k=='hair')m.renderOrder=2;m.castShadow=true;m.receiveShadow=k!='face';g.add(m);
+  if(k=='face'){p.geo.computeBoundingBox();const bb=p.geo.boundingBox;hz=(bb.min.y+bb.max.y)/2;}}
+ const s=f.scale.x||1;g.scale.setScalar(1/s);u.b.add(g);u.hull=g;u.hz=hz;}
+window.__chrUp=upgrade;
+function upAll(){if(typeof scene!='undefined'&&scene)scene.traverse(upgrade);if(typeof pScene!='undefined'&&pScene)pScene.traverse(upgrade);}
+function finish(){if(finish.d)return;finish.d=1;
+ if(typeof fig=='function'){const _f=fig;fig=function(id,col){const f=_f(id,col);upgrade(f);return f;};}
+ upAll();ov.style.transition='opacity .5s';ov.style.opacity=0;setTimeout(()=>ov.remove(),600);window.__chrReady=1;}
+// animate hull sway when walking
+if(typeof animFig=='function'){const _a=animFig;animFig=function(f,x,z,fx,fz,dt){_a(f,x,z,fx,fz,dt);const u=f.userData;if(u.hull&&u.hy){hyAnim(f,u);}else if(u.hull){u.hull.rotation.z=Math.sin(u.ph)*.045*u.wk;u.hull.rotation.x=.04*u.wk;}};}
+// procedural motion for the rigid hy3d figure: walk bob/sway/lean, idle breathing, 点穴 thrust lunge
+function hyAnim(f,u){const t=performance.now()/1000,wk=u.wk||0,ph=u.ph||0,I=u.hyIn;
+ let lean=.07*wk,bob=Math.abs(Math.sin(ph))*.035*wk,roll=Math.sin(ph)*.05*wk,yaw=Math.sin(ph)*.06*wk;
+ bob+=(1-wk)*Math.sin(t*1.7)*.006;roll+=(1-wk)*Math.sin(t*.9)*.012;
+ if(typeof heroF!='undefined'&&f===heroF&&typeof P!='undefined'&&P.lunge>0){const k=P.lunge>=11?(16-P.lunge)/5:P.lunge>4?1:P.lunge/4;lean+=.28*k;I.position.z=.16*k;yaw+=.25*k;}else I.position.z=0;
+ u.hull.rotation.set(0,0,0);I.position.y=bob;I.rotation.set(lean,yaw,roll);}
+// 3D bust portraits (3/4 view) with 3-point lighting
+let PL=null;function plights(){if(PL)return PL;const g=new THREE.Group();const key=new THREE.DirectionalLight(0xfff0dc,1.6),fill=new THREE.DirectionalLight(0xc8d8ff,.55),rim=new THREE.DirectionalLight(0xffe2b0,2.2),tg=new THREE.Object3D();
+ for(const l of [key,fill,rim]){l.target=tg;l.castShadow=false;g.add(l);}g.add(tg);pScene.add(g);PL={g,key,fill,rim,tg};return PL;}
+if(typeof renderPortrait=='function'){const _r=renderPortrait;renderPortrait=function(){const f=pfig(dlg.name);const u=f&&f.userData;if(!u||!u.hull)return _r();
+ for(const k in PFIG)PFIG[k].visible=PFIG[k]===f;const s=f.scale.x||1,hz=u.hz*1;
+ u.hull.rotation.y=(u.hy?(window.HYPY!=null?HYPY:.35):-.55)+Math.sin(performance.now()/1400)*.06;if(u.hy&&u.hyIn)u.hyIn.rotation.set(0,0,0),u.hyIn.position.set(0,0,0);u.hull.position.y=Math.sin(performance.now()/700)*.002/s;
+ const x=CR.l-GR.l+PORT.x/W*CR.w,y=CR.t-GR.t+PORT.y/H*CR.h,w=PORT.w/W*CR.w,h=PORT.h/H*CR.h,vy=GR.h-y-h;
+ const L=plights();L.tg.position.set(0,hz,0);L.key.position.set(.9,hz+.7,1.0);L.fill.position.set(-1,hz+.1,.6);L.rim.position.set(-.5,hz+.5,-1.2);L.g.visible=true;
+ const fv=pCam.fov;pCam.fov=24;pCam.aspect=w/h;pCam.updateProjectionMatrix();if(u.hy){pCam.position.set(.2,hz+.03,1.3);pCam.lookAt(.13,hz-.03,0);}else{pCam.position.set(.08,hz+.02,1.05);pCam.lookAt(0,hz-.06,0);}
+ GL.setScissorTest(true);GL.setScissor(x,vy,w,h);GL.setViewport(x,vy,w,h);GL.setClearColor('#d9c8a4',1);GL.clear();GL.render(pScene,pCam);GL.setScissorTest(false);GL.setClearColor('#000',1);pCam.fov=fv;pCam.updateProjectionMatrix();};}
+})();
+
 </script>
 </body></html>
